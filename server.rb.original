@@ -1,0 +1,352 @@
+# encoding: utf-8
+
+require "mnf/threading/event"
+
+require "thread"
+require "beanstalk-client"
+require "yajl/json_gem"
+
+module MNF
+    module RPC
+        module Queue
+            
+            ############################################################
+            ## CLASSES
+            ############################################################
+            
+            ##
+            # Queue RPC client.
+            #
+            
+            class Server
+
+                ##
+                # Holds API instance.
+                #
+                
+                @api
+
+                ##
+                # Holds shutdown indicator.
+                #
+
+                @shutdown
+                
+                ##
+                # Holds input name.
+                #
+                
+                @input_name
+                
+                ##
+                # Holds output name.
+                #
+                
+                @output_name
+                
+                ##
+                # Holds input queue.
+                #
+                
+                @input_queue
+                
+                ##
+                # Holds output queue.
+                #
+                
+                @output_queue 
+                
+                ##
+                # Holds host specification
+                #
+                
+                @host
+                
+                ##
+                # Holds results queue.
+                #
+                
+                @results_queue
+                
+                ##
+                # Indicates server will be threaded.
+                #
+                
+                @threaded
+                
+                ##
+                # Indicates current number of threads.
+                #
+                
+                @threads
+
+                ##
+                # Holds threads counter mutex.
+                #
+                
+                @mutex
+                
+                ##
+                # Indicates pooling interval.
+                #
+                
+                @pooling
+                attr_accessor :pooling
+                
+                ##
+                # Holds servers for finalizing.
+                #
+                
+                @@servers = { }
+                
+                ##
+                # Holds struct of the processing record.
+                #
+                
+                PROCESSING_STRUCT = Struct::new(:client, :output)
+                
+                ##
+                # Indicates correct result type of result.
+                #
+                
+                RESULT = 1
+                
+                ##
+                # Indicates exception type of result.
+                #
+                
+                EXCEPTION = 2
+                
+                ##
+                # Indicates maximum number of threads.
+                #
+                
+                THREADS = 50
+                
+                ##
+                # Constructor.
+                # Initializes unthreaded by default.
+                #
+                
+                def initialize(api, threaded = false)
+                    @api = api
+                    @shutdown = MNF::Threading::Event::new
+                    @threaded = threaded
+                    
+                    if threaded
+                        @threads = 0
+                        @mutex = Mutex::new
+                    end
+                    
+                    # Destructor
+                    ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
+                    @@servers[self.object_id] = self
+                end
+                
+                ##
+                # Finalizer handler.
+                #
+                
+                def self.finalize(id)
+                    if @@servers.has_key? id
+                        @@servers[id].finalize!
+                    end
+                end
+                
+                ##
+                # Destructor
+                #
+                
+                def finalize!
+                    if @input_queue
+                        @input_queue.watch("default") 
+                        @input_queue.ignore(@input_name)
+                        @input_queue.close
+                    end
+                    
+                    if @output_queue
+                        @output_queue.use("default")
+                        @output_queue.close
+                    end
+                end
+
+                ##
+                # Listens to the queue.
+                # Blocking call.
+                #
+
+                def listen(host = "localhost:11300", input_name = "qrpc-input", output_name = "qrpc-output", shutdown_pooling = 5)
+                    @host = host
+                    @pooling = shutdown_pooling
+                    @input_name = input_name
+                    @output_name = output_name
+    
+                    self.handle_output!
+                    
+                    while not @shutdown.is_set?
+                        self.handle_input!
+                    end
+                end
+                
+                ##
+                # Returns input queue.
+                #
+                
+                def input_queue
+                    if not @input_queue
+                        @input_queue = Beanstalk::Pool::new([@host])
+                        @input_queue.watch(@input_name)
+                        @input_queue.ignore("default")
+                    end
+                    
+                    return @input_queue
+                end
+                
+                ##
+                # Returns output queue.
+                #
+                
+                def output_queue
+                    if not @output_queue
+                        @output_queue = Beanstalk::Pool::new([@host])
+                    end
+                    
+                    return @output_queue
+                end
+                
+                ##
+                # Returns standard queue.
+                #
+                
+                def results_queue
+                    if not @results_queue
+                        @results_queue = ::Queue::new
+                    end
+                    
+                    return @results_queue
+                end
+                                
+                ##
+                # Handles the income jobs.
+                #
+                
+                def handle_input!
+                    threads_count = 0
+                    
+                    if @threaded
+                        @mutex.synchronize do
+                            threads_count = @threads
+                        end
+                    end
+                    
+                    (self.class::THREADS - threads_count).times do
+                    
+                        # Gets job
+                        begin
+                            job = self.input_queue.reserve(@pooling)
+                        rescue ::Beanstalk::TimedOut
+                            return false
+                        end
+                        
+                        if job
+                            result = job.body
+                            job.delete()
+                        else
+                            next
+                        end
+                        
+                        # Defines task
+                        call = Proc::new do
+                            data = JSON.parse(result)
+                            client, id, method = data[0...3]
+                            args = data[3...data.length]
+
+                            type, result = self.call(method, args)
+                            self.results_queue << self.class::PROCESSING_STRUCT::new(client, [type, id, result])
+                            
+                            if @threaded
+                                @mutex.synchronize do
+                                    @threads -= 1
+                                end
+                            end
+                        end
+
+                        # Do task
+                        if @threaded
+                            @mutex.synchronize do
+                                @threads += 1
+                            end
+                            
+                            Thread::new &call
+                        else
+                            call.call
+                        end
+                        
+                    end
+                    
+                    return true
+                end
+                
+                ##
+                # Handles the output jobs.
+                #
+                
+                def handle_output!
+                    Thread::new do
+                        while true
+                            data = self.results_queue.pop
+                            self.output_queue.use(@output_name.dup << "-" << data.client)
+                            self.output_queue.put(data.output.to_json)
+                        end
+                    end
+                end
+                
+                ##
+                # Handles call to called method.
+                #
+                
+                def call(method, args)
+                    begin
+                        result = @api.send(method.to_sym, *args)
+                        type = self.class::RESULT
+                        
+                    rescue ::Exception => e
+                        type = self.class::EXCEPTION
+                        
+                        exception = {
+                            "name" => e.class.name,
+                            "message" => e.message,
+                            "backtrace" => {
+                                "data" => e.backtrace.pack("m" * e.backtrace.length),
+                                "length" => e.backtrace.length
+                            },
+                            "dump" => Base64.encode64(Marshal.dump(e))
+                        }
+    
+                        result = exception
+                        log "exception " << e.class.name << ": " << e.message
+                    end
+                    
+                    return type, result
+                end
+                
+                ##
+                # Shutting down.
+                #
+
+                def shutdown!
+                    @shutdown.set!
+                end
+            
+            end
+            
+            ############################################################
+            ## EXCEPTIONS
+            ############################################################
+            
+            class Exception < ::Exception
+            end
+        end
+    end
+end
+
