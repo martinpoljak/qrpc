@@ -69,6 +69,12 @@ module QRPC
         @dispatcher
         
         ##
+        # Cache of output names.
+        #
+        
+        @output_name_cache
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -80,6 +86,7 @@ module QRPC
         
         def initialize(api)
             @api = api
+            @output_name_cache = { }
             
             # Destructor
             ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
@@ -123,7 +130,7 @@ module QRPC
         #
 
         def listen!(locator, opts = { })
-            EM::run do
+            EM.run do
                 self.start_listening(locator, opts)
             end
         end
@@ -137,7 +144,13 @@ module QRPC
             @locator = locator
             @locator.queue = self.class::QRPC_PREFIX.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT
             @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
+            
+            # Cache cleaning dispatcher
+            EM.add_periodic_timer(20) do
+                @output_name_cache.clear
+            end
 
+            # Process input queue
             self.input_queue do |queue|
                 queue.each_job do |job|
                     self.process_job(job)
@@ -179,6 +192,26 @@ module QRPC
             return @output_queue
         end
         
+        ##
+        # Returns output name for client name.
+        #
+        # @param [String, Symbol] client  client identifier
+        # @return [Symbol] output name
+        #
+        
+        def output_name(client)
+            client_index = client.to_sym
+            
+            if not @output_name_cache.include? client_index
+               output_name = self.class::QRPC_PREFIX.dup << "-" << client.to_s << "-" << self.class::QRPC_POSTFIX_OUTPUT
+               @output_name_cache[client_index] = output_name.to_sym
+            else
+                output_name = @output_name_cache[client_index]
+            end
+               
+            return output_name
+        end
+        
         
         protected
         
@@ -190,11 +223,11 @@ module QRPC
             our_job = QRPC::Server::Job::new(@api, job) 
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result[:output]) }
-                output_name = self.class::QRPC_PREFIX.dup << "-" << result[:client] << "-" << self.class::QRPC_POSTFIX_OUTPUT
+                output_name = self.output_name(result[:client])
                 
                 self.output_queue.list(:used) do |used|
-                    if used != output_name 
-                        self.output_queue.use(output_name, &call)
+                    if used.to_sym != output_name 
+                        self.output_queue.use(output_name.to_s, &call)
                     else
                         call.call
                     end
