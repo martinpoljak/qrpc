@@ -113,10 +113,10 @@ module QRPC
         # Blocking call.
         #
 
-        def listen!(locator) #, output_name)
+        def listen!(locator, opts = { })
             qrpc_prefix = self.class::QRPC_PREFIX
             qrpc_postfix_output = self.class::QRPC_POSTFIX_OUTPUT
-            dispatcher = QRPC::Server::Dispatcher::new
+            dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
             
             @locator = locator
             @locator.queue = qrpc_prefix.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT

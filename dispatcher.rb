@@ -22,12 +22,23 @@ module QRPC
             @queue
             
             ##
+            # Holds max jobs count.
+            #
+            
+            @max_jobs
+            
+            ##
             # Constructor.
             #
             
-            def initialize
+            def initialize(max_jobs = 20)
                 @count = 0
                 @queue = [ ]
+                @max_jobs = max_jobs
+                
+                if @max_jobs.nil?
+                    @max_jobs = 20
+                end
             end
             
             ##
@@ -38,7 +49,7 @@ module QRPC
             def put(job)
                 @queue << job
                 
-                if @count < 20
+                if @count < @max_jobs
                     self.process_next!
                     @count += 1
                 end
@@ -51,7 +62,7 @@ module QRPC
             def process_next!
                 job = @queue.shift
                 job.callback do
-                    if (@count < 20) and not @queue.empty?
+                    if (@count < @max_jobs) and not @queue.empty?
                         self.process_next!
                     else
                         @count -= 1
