@@ -1,6 +1,8 @@
 # encoding: utf-8
 require "qrpc/job"
 require "qrpc/dispatcher"
+require "qrpc/locator"
+require "em-beanstalk"
 
 module QRPC
     
@@ -110,7 +112,7 @@ module QRPC
 
         ##
         # Listens to the queue.
-        # Blocking call.
+        # (Blocking call.)
         #
 
         def listen!(locator, opts = { })
@@ -122,15 +124,17 @@ module QRPC
             @locator.queue = qrpc_prefix.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT
             
             EM::run do
-                self.input_queue.each_job do |job|
-                    our_job = QRPC::Server::Job::new(job) 
-                    our_job.callback do |result|
-                        output_queue.use(qrpc_prefix.dup << "-" << result[:client] << "-" << qrpc_postfix_output) do
-                            output_queue.put(result[:output])
+                self.input_queue do |queue|
+                    queue.each_job do |job|
+                        our_job = QRPC::Server::Job::new(@api, job) 
+                        our_job.callback do |result|
+                            output_queue.use(qrpc_prefix.dup << "-" << result[:client] << "-" << qrpc_postfix_output) do
+                                output_queue.put(result[:output])
+                            end
                         end
+                        
+                        dispatcher.put(our_job)
                     end
-                    
-                    dispatcher.put(our_job)
                 end
             end
         end
@@ -140,17 +144,17 @@ module QRPC
         # (Callable from EM only.)
         #
         
-        def input_queue
+        def input_queue(&block)
             if not @input_queue
-                @input_queue = EM::Beanstalk::new([@locator.host])
+                @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
                 @input_queue.watch(@locator.queue) do
                     @input_queue.ignore("default") do
-                        return @input_queue
+                        block.call(@input_queue)
                     end
                 end
             end
             
-            return @input_queue
+            block.call(@input_queue)
         end
         
         ##
@@ -160,7 +164,7 @@ module QRPC
         
         def output_queue
             if not @output_queue
-                @output_queue = EM::Beanstalk::new([@locator.host])
+                @output_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
             end
             
             return @output_queue

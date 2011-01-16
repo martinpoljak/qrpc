@@ -46,13 +46,14 @@ module QRPC
                 result = @api.send(request.method, *request.params)
                 response = request.class::version.response::create(result, nil, :id => request.id)
                 
+                response.qrpc = { "version" => "1.0" }
                 result = {
-                    :output = response.to_json,
-                    :client = request.client
+                    :output => response.to_json,
+                    :client => request.qrpc["client"]
                 }
-                
+
                 @job.delete()
-                self.set_deferred_status :suceeded, result
+                self.set_deferred_status :succeeded, result
             end
             
         end
