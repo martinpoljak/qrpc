@@ -3,6 +3,7 @@ require "qrpc/job"
 require "qrpc/dispatcher"
 require "qrpc/locator"
 require "em-beanstalk"
+require "eventmachine"
 require "base64"
 
 module QRPC
@@ -62,6 +63,12 @@ module QRPC
         @output_queue
         
         ##
+        # Holds job dispatcher.
+        #
+        
+        @dispatcher
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -69,7 +76,6 @@ module QRPC
 
         ##
         # Constructor.
-        # Initializes unthreaded by default.
         #
         
         def initialize(api)
@@ -113,32 +119,34 @@ module QRPC
 
         ##
         # Listens to the queue.
-        # (Blocking call.)
+        # (Blocking call which starts eventmachine.)
         #
 
         def listen!(locator, opts = { })
-            qrpc_prefix = self.class::QRPC_PREFIX
-            qrpc_postfix_output = self.class::QRPC_POSTFIX_OUTPUT
-            dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
-            
-            @locator = locator
-            @locator.queue = qrpc_prefix.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT
-            
             EM::run do
-                self.input_queue do |queue|
-                    queue.each_job do |job|
-                        our_job = QRPC::Server::Job::new(@api, job) 
-                        our_job.callback do |result|
-                            output_queue.use(qrpc_prefix.dup << "-" << result[:client] << "-" << qrpc_postfix_output) do
-                                output_queue.put(result[:output])
-                            end
-                        end
-                        
-                        dispatcher.put(our_job)
-                    end
+                self.start_listening(locator, opts)
+            end
+        end
+        
+        ##
+        # Starts listening to the queue.
+        # (Blocking queue which expect, eventmachine is started.)
+        #
+        
+        def start_listening(locator, opts)
+            @locator = locator
+            @locator.queue = self.class::QRPC_PREFIX.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT
+            @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
+
+            self.input_queue do |queue|
+                queue.each_job do |job|
+                    self.process_job(job)
                 end
             end
         end
+        
+        ##
+        #
         
         ##
         # Returns input queue.
@@ -169,6 +177,31 @@ module QRPC
             end
             
             return @output_queue
+        end
+        
+        
+        protected
+        
+        ##
+        # Process one job.
+        #
+        
+        def process_job(job)
+            our_job = QRPC::Server::Job::new(@api, job) 
+            our_job.callback do |result|
+                call = Proc::new { self.output_queue.put(result[:output]) }
+                output_name = self.class::QRPC_PREFIX.dup << "-" << result[:client] << "-" << self.class::QRPC_POSTFIX_OUTPUT
+                
+                self.output_queue.list(:used) do |used|
+                    if used != output_name 
+                        self.output_queue.use(output_name, &call)
+                    else
+                        call.call
+                    end
+                end
+            end
+            
+            @dispatcher.put(our_job)
         end
         
     end
