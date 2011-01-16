@@ -75,6 +75,12 @@ module QRPC
         @output_name_cache
         
         ##
+        # Indicates currently used output queue.
+        #
+        
+        @output_used
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -82,6 +88,7 @@ module QRPC
 
         ##
         # Constructor.
+        # @param [Object] api some object which will be used as RPC API
         #
         
         def initialize(api)
@@ -95,6 +102,7 @@ module QRPC
         
         ##
         # Finalizer handler.
+        # @param [Integer] id id of finalized instance
         #
         
         def self.finalize(id)
@@ -104,7 +112,7 @@ module QRPC
         end
         
         ##
-        # Destructor
+        # Destructor.
         #
         
         def finalize!
@@ -128,6 +136,9 @@ module QRPC
         # Listens to the queue.
         # (Blocking call which starts eventmachine.)
         #
+        # @param [QRPC::Locator] locator of the input queue
+        # @param [Hash] opts options for the server
+        #
 
         def listen!(locator, opts = { })
             EM.run do
@@ -137,7 +148,10 @@ module QRPC
         
         ##
         # Starts listening to the queue.
-        # (Blocking queue which expect, eventmachine is started.)
+        # (Blocking queue which expect, eventmachine is started.)        
+        #
+        # @param [QRPC::Locator] locator of the input queue
+        # @param [Hash] opts options for the server
         #
         
         def start_listening(locator, opts)
@@ -149,7 +163,7 @@ module QRPC
             EM.add_periodic_timer(20) do
                 @output_name_cache.clear
             end
-
+            
             # Process input queue
             self.input_queue do |queue|
                 queue.each_job do |job|
@@ -165,6 +179,8 @@ module QRPC
         # Returns input queue.
         # (Callable from EM only.)
         #
+        # @param [Proc] block block to which will be input queue given
+        #
         
         def input_queue(&block)
             if not @input_queue
@@ -174,14 +190,16 @@ module QRPC
                         block.call(@input_queue)
                     end
                 end
+            else
+                block.call(@input_queue)
             end
-            
-            block.call(@input_queue)
         end
         
         ##
         # Returns output queue.
         # (Callable from EM only.)
+        #
+        # @return [EM::Beanstalk] output queue Beanstalk connection
         #
         
         def output_queue
@@ -204,7 +222,8 @@ module QRPC
             
             if not @output_name_cache.include? client_index
                output_name = self.class::QRPC_PREFIX.dup << "-" << client.to_s << "-" << self.class::QRPC_POSTFIX_OUTPUT
-               @output_name_cache[client_index] = output_name.to_sym
+               output_name = output_name.to_sym
+               @output_name_cache[client_index] = output_name
             else
                 output_name = @output_name_cache[client_index]
             end
@@ -224,13 +243,12 @@ module QRPC
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result[:output]) }
                 output_name = self.output_name(result[:client])
-                
-                self.output_queue.list(:used) do |used|
-                    if used.to_sym != output_name 
-                        self.output_queue.use(output_name.to_s, &call)
-                    else
-                        call.call
-                    end
+
+                if @output_used != output_name 
+                    @output_used = output_name
+                    self.output_queue.use(output_name.to_s, &call)
+                else
+                    call.call
                 end
             end
             

@@ -44,15 +44,23 @@ module QRPC
         ##
         # Constructor.
         #
+        # @param [String, Symbol] queue queue name
+        # @param [String] host host name
+        # @param [Integer] port port of the host
+        #
         
         def initialize(queue, host = "localhost", port = 11300)
-            @queue = queue
+            @queue = queue.to_s
             @host = host
             @port = port
         end
         
         ##
         # Parses the locator.
+        # Excpects form <queue>@<host>:<port>. Port is optional.
+        #
+        # @param [String] string locator in string form
+        # @return [QRPC::Locator] new instance
         #
         
         def self.parse(string)
@@ -76,6 +84,7 @@ module QRPC
         
         ##
         # Converts back to string.
+        # @return [String] locator in string form
         #
         
         def to_s

@@ -80,6 +80,7 @@ module QRPC
             
             ##
             # Returns job in request form.
+            # @return [JsonRpcObjects::Generic::Object] request associated to job
             #
             
             def request
@@ -93,11 +94,18 @@ module QRPC
             ##
             # Returns job priority according to request.
             #
+            # Default priority is 50. You can scale up and down according
+            # to your needs in fact without limits.
+            #
+            # @return [Integer] priority level
+            #
             
             def priority
                 priority = self.request.qrpc["priority"]
                 if priority.nil?
-                    priroty = self.class::DEFAULT_PRIORITY
+                    priority = self.class::DEFAULT_PRIORITY
+                else
+                    priority = priority.to_i
                 end
                 
                 return priority

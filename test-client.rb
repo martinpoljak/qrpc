@@ -9,10 +9,21 @@ req2 = JsonRpcObjects::Request::create(:something_bad, nil, :id => "job2", :qrpc
 b.use("qrpc-test-input")
 b.watch("qrpc-cc-output")
 b.put(req1.to_json)
-b.put(req1.to_json)
+b.put(req2.to_json)
 
-2.times do
+job = b.reserve
+puts job.body
+job.delete
+
+job = b.reserve
+puts job.body
+job.delete
+
+=begin
+100.times do
+    b.put(req1.to_json)
     job = b.reserve
     puts job.body
     job.delete
 end
+=end
