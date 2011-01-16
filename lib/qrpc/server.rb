@@ -3,6 +3,7 @@ require "qrpc/job"
 require "qrpc/dispatcher"
 require "qrpc/locator"
 require "em-beanstalk"
+require "base64"
 
 module QRPC
     

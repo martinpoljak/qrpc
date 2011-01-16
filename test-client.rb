@@ -11,3 +11,4 @@ b.put(req.to_json)
 
 job = b.reserve
 puts job.body
+job.delete

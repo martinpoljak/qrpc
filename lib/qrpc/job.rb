@@ -2,6 +2,8 @@
 
 require "eventmachine"
 require "json-rpc-objects/request"
+require "json-rpc-objects/response"
+require "json-rpc-objects/error"
 
 module QRPC
     class Server
@@ -14,10 +16,22 @@ module QRPC
             include EM::Deferrable
             
             ##
+            # Indicates default priority.
+            #
+            
+            DEFAULT_PRIORITY = 50
+            
+            ##
             # Holds beanstalk job.
             #
             
             @job
+            
+            ##
+            # Holds JSON-RPC request.
+            #
+            
+            @request
             
             ##
             # Holds API object.
@@ -42,20 +56,74 @@ module QRPC
             #
             
             def process!
-                request = JsonRpcObjects::Request::parse(@job.body)
-                result = @api.send(request.method, *request.params)
-                response = request.class::version.response::create(result, nil, :id => request.id)
+                result = nil
+                error = nil
+                request = self.request
                 
-                response.qrpc = { "version" => "1.0" }
+                begin
+                    result = @api.send(request.method, *request.params)
+                rescue ::Exception => e
+                    error = self.generate_error(request, e)
+                end
+
+                response = request.class::version.response::create(result, error, :id => request.id)
+                response.qrpc = { :version => :"1.0" }
+                
                 result = {
                     :output => response.to_json,
                     :client => request.qrpc["client"]
                 }
 
                 @job.delete()
-                self.set_deferred_status :succeeded, result
+                self.set_deferred_status(:succeeded, result)
             end
             
+            ##
+            # Returns job in request form.
+            #
+            
+            def request
+                if @request.nil?
+                    @request = JsonRpcObjects::Request::parse(@job.body)
+                end
+                
+                return @request
+            end
+            
+            ##
+            # Returns job priority according to request.
+            #
+            
+            def priority
+                priority = self.request.qrpc["priority"]
+                if priority.nil?
+                    priroty = self.class::DEFAULT_PRIORITY
+                end
+                
+                return priority
+            end
+            
+            
+            protected
+            
+            ##
+            # Generates error from exception.
+            #
+            
+            def generate_error(request, exception)
+                data = {
+                    :name => exception.class.name,
+                    :message => exception.message,
+                    :backtrace => {
+                        :data => exception.backtrace.pack("m" * exception.backtrace.length),
+                        :length => exception.backtrace.length
+                    },
+                    :dump => Base64.encode64(Marshal.dump(exception))
+                }
+                
+                request.class::version.error::create(100, "Exception raised during processing the request.", :error => data)
+            end
+              
         end
     end
 end

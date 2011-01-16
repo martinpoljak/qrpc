@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "depq"
 
 module QRPC
     class Server
@@ -33,7 +34,7 @@ module QRPC
             
             def initialize(max_jobs = 20)
                 @count = 0
-                @queue = [ ]
+                @queue = Depq::new
                 @max_jobs = max_jobs
                 
                 if @max_jobs.nil?
@@ -47,7 +48,11 @@ module QRPC
             #
             
             def put(job)
-                @queue << job
+                begin
+                    @queue.put(job, job.priority)
+                rescue ::Exception => e
+                    return
+                end
                 
                 if @count < @max_jobs
                     self.process_next!
@@ -60,7 +65,7 @@ module QRPC
             #
             
             def process_next!
-                job = @queue.shift
+                job = @queue.pop
                 job.callback do
                     if (@count < @max_jobs) and not @queue.empty?
                         self.process_next!

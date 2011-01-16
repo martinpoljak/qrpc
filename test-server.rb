@@ -3,7 +3,7 @@ $:.push("./lib")
 
 class Foo
     def bar
-        return "Hello, world."
+        "Hello, world."
     end
 end
 
