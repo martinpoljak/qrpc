@@ -1,6 +1,6 @@
 # encoding: utf-8
-require "qrpc/job"
-require "qrpc/dispatcher"
+require "qrpc/server/job"
+require "qrpc/server/dispatcher"
 require "qrpc/locator"
 require "em-beanstalk"
 require "eventmachine"
