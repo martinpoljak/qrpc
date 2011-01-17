@@ -69,13 +69,8 @@ module QRPC
                 response = request.class::version.response::create(result, error, :id => request.id)
                 response.qrpc = { :version => :"1.0" }
                 
-                result = {
-                    :output => response.to_json,
-                    :client => request.qrpc["client"]
-                }
-
                 @job.delete()
-                self.set_deferred_status(:succeeded, result)
+                self.set_deferred_status(:succeeded, response.to_json)
             end
             
             ##
@@ -109,6 +104,15 @@ module QRPC
                 end
                 
                 return priority
+            end
+            
+            ##
+            # Returns client identifier.
+            # @return [String] client identifier
+            #
+            
+            def client
+                self.request.qrpc["client"]
             end
             
             

@@ -241,8 +241,8 @@ module QRPC
         def process_job(job)
             our_job = QRPC::Server::Job::new(@api, job) 
             our_job.callback do |result|
-                call = Proc::new { self.output_queue.put(result[:output]) }
-                output_name = self.output_name(result[:client])
+                call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
+                output_name = self.output_name(our_job.client)
 
                 if @output_used != output_name 
                     @output_used = output_name
