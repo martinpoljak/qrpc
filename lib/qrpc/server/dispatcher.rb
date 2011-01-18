@@ -1,6 +1,11 @@
 # encoding: utf-8
 require "depq"
 
+
+##
+# General QRPC module.
+#
+
 module QRPC
     class Server
         

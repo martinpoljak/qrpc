@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+
+##
+# General QRPC module.
+#
+
 module QRPC
     
     ##

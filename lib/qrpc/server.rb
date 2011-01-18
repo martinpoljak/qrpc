@@ -6,6 +6,11 @@ require "em-beanstalk"
 require "eventmachine"
 require "base64"
 
+
+##
+# General QRPC module.
+#
+
 module QRPC
     
     ##

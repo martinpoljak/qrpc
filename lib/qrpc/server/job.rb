@@ -1,9 +1,13 @@
 # encoding: utf-8
-
 require "eventmachine"
 require "json-rpc-objects/request"
 require "json-rpc-objects/response"
 require "json-rpc-objects/error"
+
+
+##
+# General QRPC module.
+#
 
 module QRPC
     class Server
