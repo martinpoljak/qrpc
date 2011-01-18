@@ -133,7 +133,7 @@ module QRPC
                     }
                 }
                 
-                request.class::version.error::create(100, "Exception raised during processing the request.", :error => data)
+                request.class::version.error::create(100, "exception raised during processing the request", :error => data)
             end
               
         end
