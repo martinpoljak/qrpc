@@ -86,8 +86,8 @@ Usage is simple. Look example:
     
 This creates an instance of `Foo` which will serve as API, creates
 locator of the queue *test* at default server *localhost:11300*. Queue 
-name will be remapped to real name *qrpc-test-input*. After call to 
-`#listen!` it will run eventmachine and start listening for calls. If 
+name will be remapped to the real name *qrpc-test-input*. After call to 
+`#listen!`, it will run eventmachine and start listening for calls. If 
 you want to run it inside already run eventmachine, simply call 
 `#start_listening` with the same parameters.
 
