@@ -11,9 +11,9 @@ thread safe.
 
 ### Protocol
 
-It utilites [JSON-RPC][3] protocol in versions [1.1][4] and [2.0][5].
+It utilizes [JSON-RPC][3] protocol in versions both [1.1][4] and [2.0][5].
 Adds special data member `qrpc` with few options appropriate for queue 
-processing. Typicall request look in Ruby hash notation like:
+processing. Typicall request looks in Ruby hash notation like:
     
     {
         "jsonrpc" => "2.0",
@@ -27,8 +27,9 @@ processing. Typicall request look in Ruby hash notation like:
         }
     }
     
-The last `priority` member is optional, others are expected including 
-members which are optional in classic JSON-RPC. Default priority is 50.
+The last `priority` member is optional, others are expected to be 
+present including them which are optional in classic JSON-RPC. 
+Default priority is 50.
 
 Typical response looks like:
 
@@ -65,7 +66,7 @@ And in case of exception:
         }
     }
     
-Both `backtrace` and `dump` are optional.
+Both `backtrace` and `dump` members are optional.
 
     
 ### Usage
@@ -83,21 +84,21 @@ Usage is simple. Look example:
     server = QRPC::Server::new(Foo::new)
     server.listen! QRPC::Locator::new("test")
     
-This will create an instance of `Foo` which will serve as API, creates
-locator of the queue *test* at default server localhost:11300. Should
-be noted, queue name will be remapped to real name *qrpc-test-input*.
-Then it will run eventmachine and start listening.
-
-If you want to run it inside already run eventmachine, simply call 
+This creates an instance of `Foo` which will serve as API, creates
+locator of the queue *test* at default server *localhost:11300*. Queue 
+name will be remapped to real name *qrpc-test-input*. After call to 
+`#listen!` it will run eventmachine and start listening for calls. If 
+you want to run it inside already run eventmachine, simply call 
 `#start_listening` with the same parameters.
 
-Calls processing is thread safe because of eventmachine -- in fact, 
-similar to fibers concept. Default at one time processed job is 20,
+Calls processing is thread safe because of eventmachine concept 
+similar to fibers. Default number at one time processed jobs is 20,
 but it can be changed by setting `:max_jobs => <number>` to `#listen!` 
 or `#start_listening`.
 
 Reponse will be put to the same queue server, to queue named 
 `qrpc-<client identifier>-output`, with structure described above. 
+Client isn't implemented at this time.
 
 Contributing
 ------------
