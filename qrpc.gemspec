@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     "Gemfile",
+    "Gemfile.lock",
     "LICENSE.txt",
     "README.md",
     "Rakefile",
@@ -27,7 +28,7 @@ Gem::Specification.new do |s|
     "lib/qrpc/server.rb",
     "lib/qrpc/server/dispatcher.rb",
     "lib/qrpc/server/job.rb",
-    "server.rb.original",
+    "qrpc.gemspec",
     "test-client.rb",
     "test-server.rb"
   ]
