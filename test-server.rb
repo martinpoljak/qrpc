@@ -2,8 +2,8 @@
 $:.push("./lib")
 
 class Foo
-    def bar
-        "Hello, world."
+    def subtract(x, y)
+        x - y
     end
 end
 
