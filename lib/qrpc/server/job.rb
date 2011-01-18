@@ -126,11 +126,11 @@ module QRPC
                 data = {
                     :name => exception.class.name,
                     :message => exception.message,
-                    :backtrace => {
-                        :data => exception.backtrace.pack("m" * exception.backtrace.length),
-                        :length => exception.backtrace.length
-                    },
-                    :dump => Base64.encode64(Marshal.dump(exception))
+                    :backtrace => exception.backtrace.map { |s| Base64.encode64(s) },
+                    :dump => {
+                        :raw => Base64.encode64(Marshal.dump(exception)),
+                        :format => :Ruby,
+                    }
                 }
                 
                 request.class::version.error::create(100, "Exception raised during processing the request.", :error => data)
