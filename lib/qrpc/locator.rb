@@ -62,7 +62,7 @@ module QRPC
         
         ##
         # Parses the locator.
-        # Excpects form <queue>@<host>:<port>. Port is optional.
+        # Excpects form +<queue>@<host>:<port>+. Port is optional.
         #
         # @param [String] string locator in string form
         # @return [QRPC::Locator] new instance
