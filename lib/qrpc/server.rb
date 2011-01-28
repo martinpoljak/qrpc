@@ -132,7 +132,7 @@ module QRPC
         def finalize!
             if not @input_queue.nil?
                 @input_queue.watch("default") do
-                    @input_queue.ignore(@input_name.to_s) do
+                    @input_queue.ignore(self.input_name.to_s) do
                         @input_queue.close
                     end
                 end
@@ -195,7 +195,7 @@ module QRPC
         def input_queue(&block)
             if not @input_queue
                 @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
-                @input_queue.watch(@input_name.to_s) do
+                @input_queue.watch(self.input_name.to_s) do
                     @input_queue.ignore("default") do
                         block.call(@input_queue)
                     end
