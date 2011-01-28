@@ -53,6 +53,12 @@ module QRPC
         @locator
         
         ##
+        # Holds input queue name.
+        #
+        
+        @input_name
+        
+        ##
         # Holds output queue name.
         #
         
@@ -124,15 +130,15 @@ module QRPC
         #
         
         def finalize!
-            if @input_queue
+            if not @input_queue.nil?
                 @input_queue.watch("default") do
-                    @input_queue.ignore(@input_name) do
+                    @input_queue.ignore(@input_name.to_s) do
                         @input_queue.close
                     end
                 end
             end
             
-            if @output_queue
+            if not @output_queue.nil?
                 @output_queue.use("default") do
                     @output_queue.close
                 end
@@ -164,7 +170,6 @@ module QRPC
         
         def start_listening(locator, opts)
             @locator = locator
-            @locator.queue = QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT
             @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
             
             # Cache cleaning dispatcher
@@ -181,9 +186,6 @@ module QRPC
         end
         
         ##
-        #
-        
-        ##
         # Returns input queue.
         # (Callable from EM only.)
         #
@@ -193,7 +195,7 @@ module QRPC
         def input_queue(&block)
             if not @input_queue
                 @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
-                @input_queue.watch(@locator.queue) do
+                @input_queue.watch(@input_name.to_s) do
                     @input_queue.ignore("default") do
                         block.call(@input_queue)
                     end
@@ -211,7 +213,7 @@ module QRPC
         #
         
         def output_queue
-            if not @output_queue
+            if @output_queue.nil?
                 @output_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
             end
             
@@ -238,6 +240,22 @@ module QRPC
                
             return output_name
         end
+        
+        ##
+        # Returns input name.
+        #
+        # @return [Symbol] input name
+        # @since 0.2.0
+        #
+        
+        def input_name
+            if @input_name.nil?
+                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT).to_sym
+            end
+            
+            return @input_name
+        end
+        
         
         
         protected
