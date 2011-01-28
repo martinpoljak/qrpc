@@ -1,11 +1,11 @@
 # encoding: utf-8
+require "qrpc/general"
 require "qrpc/server/job"
 require "qrpc/server/dispatcher"
 require "qrpc/locator"
 require "em-beanstalk"
 require "eventmachine"
 require "base64"
-
 
 ##
 # General QRPC module.
@@ -18,24 +18,27 @@ module QRPC
     #
     
     class Server
-    
+
         ##
         # Prefix for handled queues.
+        # @deprecated (since 0.2.0)
         #
         
-        QRPC_PREFIX = "qrpc"
+        QRPC_PREFIX = QRPC::QUEUE_PREFIX
         
         ##
         # Input queue postfix.
+        # @deprecated (since 0.2.0)
         #
         
-        QRPC_POSTFIX_INPUT = "input"
+        QRPC_POSTFIX_INPUT = QRPC::QUEUE_POSTFIX_INPUT
         
         ##
         # Output queue postfix.
+        # @deprecated (since 0.2.0)
         #
         
-        QRPC_POSTFIX_OUTPUT = "output"
+        QRPC_POSTFIX_OUTPUT = QRPC::QUEUE_POSTFIX_OUTPUT
 
         ##
         # Holds API instance.
@@ -161,7 +164,7 @@ module QRPC
         
         def start_listening(locator, opts)
             @locator = locator
-            @locator.queue = self.class::QRPC_PREFIX.dup << "-" << @locator.queue << "-" << self.class::QRPC_POSTFIX_INPUT
+            @locator.queue = QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT
             @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
             
             # Cache cleaning dispatcher
@@ -226,7 +229,7 @@ module QRPC
             client_index = client.to_sym
             
             if not @output_name_cache.include? client_index
-               output_name = self.class::QRPC_PREFIX.dup << "-" << client.to_s << "-" << self.class::QRPC_POSTFIX_OUTPUT
+               output_name = QRPC::QUEUE_PREFIX.dup << "-" << client.to_s << "-" << QRPC::QUEUE_POSTFIX_OUTPUT
                output_name = output_name.to_sym
                @output_name_cache[client_index] = output_name
             else
