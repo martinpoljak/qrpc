@@ -245,7 +245,7 @@ module QRPC
         # Returns input name.
         #
         # @return [Symbol] input name
-        # @since 0.2.0
+        # @since 0.1.1
         #
         
         def input_name
