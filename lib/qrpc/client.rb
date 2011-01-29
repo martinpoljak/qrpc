@@ -27,6 +27,18 @@ module QRPC
         @id
         
         ##
+        # Holds input queue name.
+        #
+        
+        @input_name
+        
+        ##
+        # Holds input queue instance.
+        #
+        
+        @input_queue
+        
+        ##
         # Holds output queue name.
         #
         
