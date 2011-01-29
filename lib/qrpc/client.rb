@@ -1,5 +1,6 @@
 # encoding: utf-8
-require "json-rpc-objects/request"
+require "em-beanstalk"
+require "uuid"
 
 ##
 # General QRPC module.
@@ -24,6 +25,12 @@ module QRPC
         #
         
         @id
+        
+        ##
+        # Holds output queue name.
+        #
+        
+        @output_name
         
         ##
         # Holds output queue instance.
@@ -89,7 +96,7 @@ module QRPC
         #
         
         def method_missing(name, *args, &block)
-            self.put(Client::Job::new(client.id, name, args, block))
+            self.put(Client::Job::new(self.id, name, args, block))
         end
         
         ##
@@ -102,6 +109,87 @@ module QRPC
             self.output_queue do |queue|
                 queue.put(job.to_json)
             end
+            
+            if @jobs.length > 0
+                self.pool!
+            end
+        end
+        
+        ##
+        # Starts input (results) pooling.
+        #
+        
+        def pool!
+            
+            # Results processing logic
+            processor = Proc::new do |job|
+            end
+            
+            # Runs processor for each job, if no job available
+            #   and any results came, terminates pooling. In 
+            #   otherwise restarts pooling.
+
+            worker = EM.spawn do                
+                self.input_queue do |queue|
+                    queue.each_job(4, &processor).on_error do |error|
+                        if error == :timed_out
+                            if @jobs.length > 0
+                                self.pool!
+                            end
+                        else
+                            raise Exception::new("Beanstalk error: " << error.to_s)
+                        end
+                    end
+                end
+            end
+            
+            ##
+            
+            worker.run
+        end
+        
+        ##
+        # Returns input name.
+        #
+        
+        def input_name
+            if @input_name.nil?
+                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << self.id << "-" << QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
+            end
+            
+            return @input_name
+        end
+        
+        ##
+        # Returns input queue.
+        # (Callable from EM only.)
+        #
+        # @return [EM::Beanstalk] input queue Beanstalk connection
+        #
+        
+        def input_queue(&block)
+            if @input_queue.nil?
+                @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
+                @input_queue.watch(self.input_name.to_s) do
+                    @input_queue.ignore("default") do
+                        block.call(@input_queue)
+                    end
+                end
+            else
+                block.call(@input_queue)
+            end
+        end
+        
+        ##
+        # Returns output name.
+        #
+        
+        def output_name
+            if @output_name.nil?
+                @output_name = (QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT).to_sym
+            end
+            
+            return @output_name
         end
         
         ##
@@ -114,14 +202,24 @@ module QRPC
         def output_queue(&block)
             if @output_queue.nil?
                 @output_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
-                @output_queue.ignore("default") do
-                    @output_queue.use(QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT) do
-                        block.call(@output_queue)
-                    end
+                @output_queue.use(self.output_name.to_s) do
+                    block.call(@output_queue)
                 end
             else
                 block.call(@output_queue)
             end
+        end
+        
+        ##
+        # Returns client (or maybe session is better) ID.
+        #
+        
+        def id
+            if @id.nil?
+                @id = UUID.generate
+            end
+            
+            return @id
         end
                 
     end
