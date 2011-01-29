@@ -15,6 +15,12 @@ module QRPC
     class Client
     
         ##
+        # Indicates timeout for results pooling throttling in secconds.
+        #
+        
+        RESULTS_POOLING_THROTTLING_TIMEOUT = 4
+    
+        ##
         # Holds locator of the target queue.
         #
         
@@ -55,6 +61,7 @@ module QRPC
         #
         
         @@clients = { }
+        
         
         ##
         # Constructor.
@@ -100,8 +107,7 @@ module QRPC
         end
         
         ##
-        # *********
-        # Handles call to RPC.
+        # Handles call to RPC. (*********)
         #
         # Be warn, arguments will be serialized to JSON, so they should
         # be serializable nativelly or implement +#to_json+ method.
@@ -143,7 +149,7 @@ module QRPC
 
             worker = EM.spawn do                
                 self.input_queue do |queue|
-                    queue.each_job(4, &processor).on_error do |error|
+                    queue.each_job(self.class::RESULTS_POOLING_THROTTLING_TIMEOUT, &processor).on_error do |error|
                         if error == :timed_out
                             if @jobs.length > 0
                                 self.pool!
