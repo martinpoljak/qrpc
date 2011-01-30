@@ -139,7 +139,9 @@ module QRPC
         #
         
         def put(job)
-            @jobs[job.id] = job
+            if not job.notification?
+                @jobs[job.id] = job
+            end
             
             self.output_queue do |queue|
                 queue.put(job.to_json)

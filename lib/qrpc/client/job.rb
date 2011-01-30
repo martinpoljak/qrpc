@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "uuid"
-require "json-rpc-objects/request"
+require "qrpc/json-rpc/request"
+require "qrpc/general"
 
 ##
 # General QRPC module.
@@ -15,52 +16,53 @@ module QRPC
     class Client
     
         ##
-        # Holds job ID.
-        #
-        
-        @id
-        
-        ##
-        # Holds associated client ID.
-        #
-        
-        @client_id
-        
-        ##
-        # Holds method name of the job.
-        #
-        
-        @job
-        
-        ##
-        # Holds method arguments array.
-        #
-        
-        @arguments
-        
-        ##
-        # Holds job callback.
-        #
-        
-        @callback
-        
-        ##
-        # Message priority.
-        #
-        
-        @priority
-    
-        ##
         # Queue RPC client job.
+        # @since 0.2.0
         #
         
         class Job
+
+            ##
+            # Holds job ID.
+            #
             
+            @id
+            
+            ##
+            # Holds associated client ID.
+            #
+            
+            @client_id
+            
+            ##
+            # Holds method name of the job.
+            #
+            
+            @job
+            
+            ##
+            # Holds method arguments array.
+            #
+            
+            @arguments
+            
+            ##
+            # Holds job callback.
+            #
+            
+            @callback
+            
+            ##
+            # Message priority.
+            #
+            
+            @priority
+        
             ##
             # Constructor.
             #
             
-            def initialize(client_id, method, arguments = [ ], priority = 50, &callback)
+            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, &callback)
                 @client_id = client_id
                 @method = method_missing
                 @arguments = arguments
@@ -85,14 +87,16 @@ module QRPC
             #
             
             def to_json
-                qrpc = {
-                    :version => "1.0",
-                    :client => @client_id,
-                    :priority => @priority,
-                }
-                
-                req = JsonRpcObjects::Request::create(@method, @arguments, :id => self.id, :qrpc => qrpc)
-                return req.to_json
+                QRPC::JsonRpc::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
+            end
+            
+            ##
+            # Indicates message is notification. So callback isn't set
+            # and it doesn't expect any result.
+            #
+            
+            def notification?
+                @callback.nil?
             end
             
         end
