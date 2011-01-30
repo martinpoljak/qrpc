@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "em-beanstalk"
 require "uuid"
+require "qrpc/general"
 
 ##
 # General QRPC module.
@@ -10,6 +11,7 @@ module QRPC
     
     ##
     # Queue RPC client.
+    # @since 0.2.0
     #
     
     class Client
@@ -57,6 +59,12 @@ module QRPC
         @output_queue
         
         ##
+        # Indicates, results pooling is ran.
+        #
+        
+        @pooling
+        
+        ##
         # Holds clients for finalizing.
         #
         
@@ -69,6 +77,7 @@ module QRPC
         
         def initialize(locator)
             @locator = locator
+            @pooling = false
         
             # Destructor
             ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
@@ -121,7 +130,7 @@ module QRPC
         # Creates job associated to this client session.
         #
         
-        def create_job(name, args, priority = 50, &block)
+        def create_job(name, args, priority = QRPC::DEFAULT_PRIORITY, &block)
             Client::Job::new(self.id, name, args, priority, &block)
         end
         
@@ -136,7 +145,7 @@ module QRPC
                 queue.put(job.to_json)
             end
             
-            if @jobs.length > 0
+            if (not @pooling) and (@jobs.length > 0)
                 self.pool!
             end
         end
@@ -162,6 +171,8 @@ module QRPC
                         if error == :timed_out
                             if @jobs.length > 0
                                 self.pool!
+                            else
+                                @pooling = false
                             end
                         else
                             raise Exception::new("Beanstalk error: " << error.to_s)
@@ -173,6 +184,8 @@ module QRPC
             ##
             
             worker.run
+            @pooling = true
+            
         end
         
         ##
