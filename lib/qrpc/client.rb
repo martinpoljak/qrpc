@@ -114,7 +114,15 @@ module QRPC
         #
         
         def method_missing(name, *args, &block)
-            self.put(Client::Job::new(self.id, name, args, block))
+            self.put(self.create_job(name, args, &block))
+        end
+        
+        ##
+        # Creates job associated to this client session.
+        #
+        
+        def create_job(name, args, priority = 50, &block)
+            Client::Job::new(self.id, name, args, priority, &block)
         end
         
         ##
@@ -141,6 +149,7 @@ module QRPC
             
             # Results processing logic
             processor = Proc::new do |job|
+                
             end
             
             # Runs processor for each job, if no job available
