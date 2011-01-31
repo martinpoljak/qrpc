@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "uuid"
-require "qrpc/json-rpc/request"
+require "qrpc/protocol/request"
 require "qrpc/general"
 
 ##
@@ -87,7 +87,7 @@ module QRPC
             #
             
             def to_json
-                QRPC::JsonRpc::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
+                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
             end
             
             ##

@@ -3,6 +3,8 @@ require "eventmachine"
 require "json-rpc-objects/request"
 require "json-rpc-objects/response"
 require "json-rpc-objects/error"
+require "qrpc/general"
+require "qrpc/protocol/qrpc-object"
 
 
 ##
@@ -21,9 +23,10 @@ module QRPC
             
             ##
             # Indicates default priority.
+            # @deprecated (since 0.2.0)
             #
             
-            DEFAULT_PRIORITY = 50
+            DEFAULT_PRIORITY = QRPC::DEFAULT_PRIORITY
             
             ##
             # Holds beanstalk job.
@@ -71,12 +74,12 @@ module QRPC
                 end
 
                 response = request.class::version.response::create(result, error, :id => request.id)
-                response.qrpc = { :version => :"1.0" }
+                response.qrpc = QRPC::Protocol::QrpcObject::create
                 
                 @job.delete()
                 self.set_deferred_status(:succeeded, response.to_json)
             end
-            
+
             ##
             # Returns job in request form.
             # @return [JsonRpcObjects::Generic::Object] request associated to job
@@ -102,7 +105,7 @@ module QRPC
             def priority
                 priority = self.request.qrpc["priority"]
                 if priority.nil?
-                    priority = self.class::DEFAULT_PRIORITY
+                    priority = QRPC::DEFAULT_PRIORITY
                 else
                     priority = priority.to_i
                 end
