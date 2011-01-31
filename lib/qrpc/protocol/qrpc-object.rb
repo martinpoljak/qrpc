@@ -61,8 +61,8 @@ module QRPC
                     result[:priority] = @priority
                 end
                 
-                if not @client_id.nil?
-                    result[:client_id] = @client_id
+                if not @client.nil?
+                    result[:client] = @client
                 end
                 
                 return result
@@ -79,7 +79,7 @@ module QRPC
                 data = __convert_data(value, mode)
                 
                 @priority = data[:priority]
-                @client_id = data[:client_id]
+                @client = data[:client]
             end
 
             ##
