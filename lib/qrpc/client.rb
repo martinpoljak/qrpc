@@ -2,6 +2,7 @@
 require "em-beanstalk"
 require "uuid"
 require "qrpc/general"
+require "json-rpc-objects/response"
 
 ##
 # General QRPC module.
@@ -160,7 +161,13 @@ module QRPC
             
             # Results processing logic
             processor = Proc::new do |job|
+                response = JsonRpcObjects::Response::parse(job)
                 
+                if @jobs.include? response.id
+                    @jobs[response.id].assign_result(response)
+                end
+                
+                @jobs.delete(response.id)
             end
             
             # Runs processor for each job, if no job available

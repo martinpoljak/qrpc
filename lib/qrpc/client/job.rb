@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "uuid"
 require "qrpc/protocol/request"
+require "qrpc/protocol/exception"
 require "qrpc/general"
 
 ##
@@ -57,6 +58,12 @@ module QRPC
             #
             
             @priority
+            
+            ##
+            # Job result.
+            #
+            
+            @result
         
             ##
             # Constructor.
@@ -97,6 +104,22 @@ module QRPC
             
             def notification?
                 @callback.nil?
+            end
+            
+            ##
+            # Assigns job result and subsequently calls callback.
+            #
+            
+            def assign_result(result)
+                if not result.error?
+                    @result = result.result
+                else
+                    raise QRPC::Client::Exception::get(result.error)
+                end
+                
+                if not @callback.nil?
+                    @callback.call(@result)
+                end
             end
             
         end

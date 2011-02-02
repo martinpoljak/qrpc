@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "json-rpc-objects/generic"
+require "json-rpc-objects/generic/object"
 require "json-rpc-objects/request"
 
 ##
@@ -44,6 +44,8 @@ module QRPC
             #
             
             def check!
+                self.normalize!
+                
                 if (not @priority.nil?) and not (@priority.kind_of? Numeric)
                     raise Exception::new("Priority is expected to be Numeric.")
                 end
@@ -55,7 +57,7 @@ module QRPC
             #
 
             def output
-                result = { :version => "1.0" }
+                result = { :version => :"1.0.1" }
                 
                 if not @priority.nil?
                     result[:priority] = @priority

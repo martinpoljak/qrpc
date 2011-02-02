@@ -17,7 +17,9 @@ module QRPC
     module Protocol
 
         ##
-        # QRPC JSON-RPC request.
+        # QRPC JSON-RPC request. Extends +JsonRpcObjects::Request+.
+        # See its documentation for additional reference.
+        #
         # @since 0.2.0
         #
         

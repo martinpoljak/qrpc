@@ -55,7 +55,7 @@ And in case of exception:
                 "backtrace" => <array of Base64 encoded strings>,
                 "dump" => {
                     "raw" => <Base 54 encoded marshaled exception object>,
-                    "format" => "Ruby"
+                    "format" => "ruby"
                 }
             }
         },
