@@ -58,17 +58,29 @@ module QRPC
             attr_accessor :dump
             
             ##
+            # Indicates, data are encoded and should be decoded.
+            #
+            
+            @__encoded
+            
+            ##
             # Creates new QRPC JSON-RPC object.
             #
             
             def self.create(arg1, message, opts = { })
                 if arg1.kind_of? Exception
+                    mode = :decoded
                     data = {
                         :name => arg1.class.name,
-                        :message = arg1.message
+                        :message => arg1.message,
+                        :backtrace => arg1.backtrace,
+                        :dump => {
+                            "format" => "ruby",
+                            "object" => arg1
+                        }
                     }
-                    
                 else
+                    mode = :encoded
                     data = {
                         :name => arg1,
                         :message = message
@@ -76,7 +88,17 @@ module QRPC
                 end
                 
                 data.merge! opts
-                return self::new(data)
+                return self::new(data, mode)
+            end
+            
+            ##
+            # Constructor.
+            # @param [Hash] data for initializing the object
+            #
+            
+            def initialize(data, mode = :encoded)
+                @__encoded = (mode == :encoded)
+                super(data)
             end
             
             ##
@@ -154,7 +176,7 @@ module QRPC
                 # Backtrace
                 backtrace = data[:backtrace]
                 
-                if backtrace.kind_of? Array
+                if @__encoded and (backtrace.kind_of? Array)
                     @backtrace = backtrace.map { |i| Base64.decode64{i) }
                 end
                 
@@ -162,9 +184,9 @@ module QRPC
                 dump = data[:dump]
                    
                 if dump.kind_of? Hash
-                    @dump = Struct::new(:format, :raw, :object)::new(dump["format"].downcase.to_sym, dump["raw"], nil)
+                    @dump = Struct::new(:format, :raw, :object)::new(dump["format"].downcase.to_sym, dump["raw"], dump["object"])
                     
-                    if @dump.format == :ruby
+                    if not @dump.raw.nil? and @dump.object.nil? and (@dump.format == :ruby)
                         @dump.object = Marshal.load(Base64.decode64(@dump.raw))
                     end
                 end

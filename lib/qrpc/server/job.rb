@@ -5,6 +5,7 @@ require "json-rpc-objects/response"
 require "json-rpc-objects/error"
 require "qrpc/general"
 require "qrpc/protocol/qrpc-object"
+require "qrpc/protocol/exception-data"
 
 
 ##
@@ -130,6 +131,7 @@ module QRPC
             #
             
             def generate_error(request, exception)
+=begin
                 data = {
                     :name => exception.class.name,
                     :message => exception.message,
@@ -139,7 +141,8 @@ module QRPC
                         :format => :ruby,
                     }
                 }
-                
+=end
+                data = QRPC::Protocol::ExceptionData::create(exception)
                 request.class::version.error::create(100, "exception raised during processing the request", :error => data)
             end
               

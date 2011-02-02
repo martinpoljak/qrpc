@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "uuid"
 require "qrpc/protocol/request"
-require "qrpc/protocol/exception"
+require "qrpc/client/exception"
 require "qrpc/general"
 
 ##
@@ -114,6 +114,7 @@ module QRPC
                 if not result.error?
                     @result = result.result
                 else
+                    STDERR.write("Exception while call ID: " << self.id)
                     raise QRPC::Client::Exception::get(result.error)
                 end
                 
