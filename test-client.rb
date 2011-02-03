@@ -6,7 +6,7 @@ require "qrpc/locator"
 require "eventmachine"
 
 EM::run do
-    client = QRPC::Client::new QRPC::Locator::new "test"
+    client = QRPC::Client::new QRPC::Locator::new :test
     puts client.inspect
 
     client.subtract(2, 3) do |i|

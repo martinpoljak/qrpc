@@ -133,7 +133,7 @@ module QRPC
         def finalize!
             if not @input_queue.nil?
                 @input_queue.watch("default") do
-                    @input_queue.ignore(self.input_name.to_s) do
+                    @input_queue.ignore(@input_name.to_s) do
                         @input_queue.close
                     end
                 end
