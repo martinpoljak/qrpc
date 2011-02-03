@@ -1,4 +1,28 @@
 # encoding: utf-8
+
+$:.push("./lib")
+require "qrpc/client"
+require "qrpc/locator"
+require "eventmachine"
+
+EM::run do
+    client = QRPC::Client::new QRPC::Locator::new "test"
+    puts client.inspect
+
+    client.subtract(2, 3) do |i|
+        puts i
+    end
+    
+    client.subtract(3, 2) do |i|
+        puts i
+    end
+    
+    client.something_bad do |i|
+        puts i
+    end
+end
+
+=begin
 require "beanstalk-client"
 require "json-rpc-objects/request"
 
