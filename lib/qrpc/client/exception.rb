@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "qrpc/protocol/exception-data"
 
 ##
 # General QRPC module.

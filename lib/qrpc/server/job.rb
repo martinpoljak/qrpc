@@ -131,17 +131,6 @@ module QRPC
             #
             
             def generate_error(request, exception)
-=begin
-                data = {
-                    :name => exception.class.name,
-                    :message => exception.message,
-                    :backtrace => exception.backtrace.map { |s| Base64.encode64(s) },
-                    :dump => {
-                        :raw => Base64.encode64(Marshal.dump(exception)),
-                        :format => :ruby,
-                    }
-                }
-=end
                 data = QRPC::Protocol::ExceptionData::create(exception)
                 request.class::version.error::create(100, "exception raised during processing the request", :error => data)
             end

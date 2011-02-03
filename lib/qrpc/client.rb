@@ -2,6 +2,7 @@
 require "em-beanstalk"
 require "uuid"
 require "qrpc/general"
+require "qrpc/client/job"
 require "json-rpc-objects/response"
 
 ##
@@ -79,6 +80,7 @@ module QRPC
         def initialize(locator)
             @locator = locator
             @pooling = false
+            @jobs = { }
         
             # Destructor
             ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
@@ -161,7 +163,8 @@ module QRPC
             
             # Results processing logic
             processor = Proc::new do |job|
-                response = JsonRpcObjects::Response::parse(job)
+                response = JsonRpcObjects::Response::parse(job.body)
+                job.delete()
                 
                 if @jobs.include? response.id
                     @jobs[response.id].assign_result(response)
@@ -173,13 +176,14 @@ module QRPC
             # Runs processor for each job, if no job available
             #   and any results came, terminates pooling. In 
             #   otherwise restarts pooling.
+            parent = self
 
-            worker = EM.spawn do                
-                self.input_queue do |queue|
-                    queue.each_job(self.class::RESULTS_POOLING_THROTTLING_TIMEOUT, &processor).on_error do |error|
+            worker = EM.spawn do
+                parent.input_queue do |queue|
+                    queue.each_job(parent.class::RESULTS_POOLING_THROTTLING_TIMEOUT, &processor).on_error do |error|
                         if error == :timed_out
                             if @jobs.length > 0
-                                self.pool!
+                                parent.pool!
                             else
                                 @pooling = false
                             end

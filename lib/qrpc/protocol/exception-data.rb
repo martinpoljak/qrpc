@@ -67,7 +67,7 @@ module QRPC
             # Creates new QRPC JSON-RPC object.
             #
             
-            def self.create(arg1, message, opts = { })
+            def self.create(arg1, message = nil, opts = { })
                 if arg1.kind_of? Exception
                     mode = :decoded
                     data = {
@@ -83,7 +83,7 @@ module QRPC
                     mode = :encoded
                     data = {
                         :name => arg1,
-                        :message = message
+                        :message => message
                     }
                 end
                 
@@ -108,7 +108,7 @@ module QRPC
             def check!
                 self.normalize!
 
-                if not @name.kind_of? [Symbol]
+                if not @name.kind_of? Symbol
                     raise Exception::new("Exception name is expected to be Symbol or convertable to symbol.")
                 end
                 
@@ -177,7 +177,7 @@ module QRPC
                 backtrace = data[:backtrace]
                 
                 if @__encoded and (backtrace.kind_of? Array)
-                    @backtrace = backtrace.map { |i| Base64.decode64{i) }
+                    @backtrace = backtrace.map { |i| Base64.decode64(i) }
                 end
                 
                 # Dump

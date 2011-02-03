@@ -71,7 +71,7 @@ module QRPC
             
             def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, &callback)
                 @client_id = client_id
-                @method = method_missing
+                @method = method
                 @arguments = arguments
                 @callback = callback
                 @priority = priority
@@ -114,8 +114,12 @@ module QRPC
                 if not result.error?
                     @result = result.result
                 else
-                    STDERR.write("Exception while call ID: " << self.id)
-                    raise QRPC::Client::Exception::get(result.error)
+                    STDERR.write(">>> Exception while call ID: " << self.id << "\n")
+                    exception = QRPC::Client::Exception::get(result.error)
+                    puts exception.class.name.dup << ": " << exception.message
+                    puts exception.backtrace
+                    
+                    #raise QRPC::Client::Exception::get(result.error)
                 end
                 
                 if not @callback.nil?
