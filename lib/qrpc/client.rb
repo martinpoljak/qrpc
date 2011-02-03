@@ -69,6 +69,7 @@ module QRPC
         
         ##
         # Constructor.
+        # @param [QRPC::Locator] locator of the output queue
         #
         
         def initialize(locator)
@@ -118,6 +119,10 @@ module QRPC
         # Be warn, arguments will be serialized to JSON, so they should
         # be serializable nativelly or implement +#to_json+ method.
         #
+        # @param [Symbol] name name of the called methods
+        # @param [Array] args arguments of the called methods
+        # @param [Proc] block callback for returning result
+        #
         
         def method_missing(name, *args, &block)
             self.put(self.create_job(name, args, &block))
@@ -125,6 +130,12 @@ module QRPC
         
         ##
         # Creates job associated to this client session.
+        # 
+        # @param [Symbol] name name of the method of the job
+        # @param [Array] args arguments of the method call
+        # @param [Integer] priority job priority
+        # @param [Proc] block result returning callback
+        # @return [QRPC::Client::Job] new job
         #
         
         def create_job(name, args, priority = QRPC::DEFAULT_PRIORITY, &block)
@@ -133,7 +144,7 @@ module QRPC
         
         ##
         # Puts job to client.
-        #
+        # @param [QRPC::Client::Job] job  job for put to output queue
         
         def put(job)
             if not job.notification?
@@ -148,7 +159,7 @@ module QRPC
                 self.pool!
             end
         end
-        
+     
         ##
         # Starts input (results) pooling.
         #
@@ -158,13 +169,14 @@ module QRPC
             # Results processing logic
             processor = Proc::new do |job|
                 response = JsonRpcObjects::Response::parse(job.body)
+                id = response.id.to_sym
                 job.delete()
                 
-                if @jobs.include? response.id
-                    @jobs[response.id].assign_result(response)
+                if @jobs.include? id
+                    @jobs[id].assign_result(response)
                 end
                 
-                @jobs.delete(response.id)
+                @jobs.delete(id)
             end
             
             # Runs processor for each job            
@@ -182,11 +194,12 @@ module QRPC
         
         ##
         # Returns input name.
+        # @return [Symbol] input queue name
         #
         
         def input_name
             if @input_name.nil?
-                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << self.id << "-" << QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
+                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << self.id.to_s << "-" << QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
             end
             
             return @input_name
@@ -194,9 +207,7 @@ module QRPC
         
         ##
         # Returns input queue.
-        # (Callable from EM only.)
-        #
-        # @return [EM::Beanstalk] input queue Beanstalk connection
+        # @param [Proc] block block to which will be input queue given
         #
         
         def input_queue(&block)
@@ -222,6 +233,7 @@ module QRPC
         
         ##
         # Returns output name.
+        # @return [Symbol] output queue name
         #
         
         def output_name
@@ -234,9 +246,7 @@ module QRPC
         
         ##
         # Returns output queue.
-        # (Callable from EM only.)
-        #
-        # @return [EM::Beanstalk] output queue Beanstalk connection
+        # @param [Proc] block block to which will be output queue given
         #
         
         def output_queue(&block)
@@ -256,7 +266,7 @@ module QRPC
         
         def id
             if @id.nil?
-                @id = UUID.generate
+                @id = UUID.generate.to_sym
             end
             
             return @id

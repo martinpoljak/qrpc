@@ -83,7 +83,7 @@ module QRPC
             
             def id
                 if @id.nil?
-                    @id = UUID.generate
+                    @id = UUID.generate.to_sym
                 end
                 
                 return @id
@@ -114,12 +114,18 @@ module QRPC
                 if not result.error?
                     @result = result.result
                 else
-                    STDERR.write(">>> Exception while call ID: " << self.id << "\n")
+=begin
+                    STDERR.write(">>> Exception while call ID: " << self.id.to_s << "\n")
+=end                    
                     exception = QRPC::Client::Exception::get(result.error)
-                    puts exception.class.name.dup << ": " << exception.message
-                    puts exception.backtrace
+=begin
+                    STDERR.write exception.class.name.dup << ": " << exception.message << "\n"
                     
-                    #raise QRPC::Client::Exception::get(result.error)
+                    exception.backtrace.each do |i|
+                        STDERR.write "	from " << i << "\n"
+                    end
+=end                    
+                    raise exception
                 end
                 
                 if not @callback.nil?

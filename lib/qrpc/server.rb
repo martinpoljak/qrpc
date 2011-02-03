@@ -188,8 +188,6 @@ module QRPC
         
         ##
         # Returns input queue.
-        # (Callable from EM only.)
-        #
         # @param [Proc] block block to which will be input queue given
         #
         
@@ -208,9 +206,7 @@ module QRPC
         
         ##
         # Returns output queue.
-        # (Callable from EM only.)
-        #
-        # @return [EM::Beanstalk] output queue Beanstalk connection
+        # @return [EMJack::Connection] output queue Beanstalk connection
         #
         
         def output_queue
