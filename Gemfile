@@ -3,7 +3,7 @@ source "http://rubygems.org"
 # Example:
    gem "json-rpc-objects", ">= 0.3.0"
    gem "depq", ">= 0.4"
-   gem "em-beanstalk", ">= 0.0.10"
+   gem "em-jack", ">= 0.1.3"
    gem "eventmachine", ">= 0.12.10"
 
 # Add dependencies to develop your gem here.

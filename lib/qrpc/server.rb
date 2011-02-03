@@ -4,7 +4,7 @@ require "qrpc/server/job"
 require "qrpc/server/dispatcher"
 require "qrpc/locator"
 require "qrpc/protocol/qrpc-object"
-require "em-beanstalk"
+require "em-jack"
 require "eventmachine"
 require "base64"
 
@@ -195,7 +195,7 @@ module QRPC
         
         def input_queue(&block)
             if not @input_queue
-                @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
+                @input_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
                 @input_queue.watch(self.input_name.to_s) do
                     @input_queue.ignore("default") do
                         block.call(@input_queue)
@@ -215,7 +215,7 @@ module QRPC
         
         def output_queue
             if @output_queue.nil?
-                @output_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
+                @output_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
             end
             
             return @output_queue

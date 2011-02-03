@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "em-beanstalk"
+require "em-jack"
 require "uuid"
 require "qrpc/general"
 require "qrpc/client/job"
@@ -17,12 +17,6 @@ module QRPC
     #
     
     class Client
-    
-        ##
-        # Indicates timeout for results pooling throttling in secconds.
-        #
-        
-        RESULTS_POOLING_THROTTLING_TIMEOUT = 4
     
         ##
         # Holds locator of the target queue.
@@ -173,25 +167,10 @@ module QRPC
                 @jobs.delete(response.id)
             end
             
-            # Runs processor for each job, if no job available
-            #   and any results came, terminates pooling. In 
-            #   otherwise restarts pooling.
+            # Runs processor for each job            
             parent = self
-
             worker = EM.spawn do
-                parent.input_queue do |queue|
-                    queue.each_job(parent.class::RESULTS_POOLING_THROTTLING_TIMEOUT, &processor).on_error do |error|
-                        if error == :timed_out
-                            if @jobs.length > 0
-                                parent.pool!
-                            else
-                                @pooling = false
-                            end
-                        else
-                            raise Exception::new("Beanstalk error: " << error.to_s)
-                        end
-                    end
-                end
+                parent.input_queue { |q| q.each_job(&processor) }
             end
             
             ##
@@ -222,10 +201,18 @@ module QRPC
         
         def input_queue(&block)
             if @input_queue.nil?
-                @input_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
+                @input_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
                 @input_queue.watch(self.input_name.to_s) do
                     @input_queue.ignore("default") do
+
+                        # Results pooler error handler
+                        @input_queue.on_error do |error|
+                            raise Exception::new("Beanstalk error: " << error.to_s)
+                        end
+                        
+                        # Returns
                         block.call(@input_queue)
+                        
                     end
                 end
             else
@@ -254,7 +241,7 @@ module QRPC
         
         def output_queue(&block)
             if @output_queue.nil?
-                @output_queue = EM::Beanstalk::new(:host => @locator.host, :port => @locator.port)
+                @output_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
                 @output_queue.use(self.output_name.to_s) do
                     block.call(@output_queue)
                 end
