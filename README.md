@@ -1,10 +1,10 @@
 QRPC
 ====
 
-**QRPC** currently implements queued JSON-RPC server which works as 
-normal RPC server, but through queue interface, so allows highly 
-scalable, distributed and asynchronous remote API implementation and 
-fast data processing. 
+**QRPC** currently implements queued JSON-RPC both client and server 
+which works as normal RPC server, but through queue interface, so allows 
+highly scalable, distributed and asynchronous remote API implementation 
+and fast data processing. 
 
 It's based on [eventmachine][1] and [beanstalkd][2] so it's fast and 
 thread safe. 

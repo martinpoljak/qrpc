@@ -1,7 +1,7 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
-   gem "json-rpc-objects", ">= 0.3.0"
+   gem "json-rpc-objects", ">= 0.3.1"
    gem "depq", ">= 0.4"
    gem "em-jack", ">= 0.1.3"
    gem "eventmachine", ">= 0.12.10"
