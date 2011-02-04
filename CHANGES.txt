@@ -1,0 +1,10 @@
+
+0.2.0 (2011-02-04)
+* client implemented
+
+0.1.1 (2011-01-29)
+* small unimportant bug while destroying corrected
+* some constants move between modules
+
+0.1.0 (2011-01-18) 
+* initial version (implemented server only)
