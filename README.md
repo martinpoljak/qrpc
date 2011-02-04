@@ -102,18 +102,22 @@ Reponse will be put to the same queue server, to queue named
 ### Client Usage
 
 Client usage is simple too. Look example:
+
+    require "eventmachine"
     require "qrpc/client"
-    client = QRPC::Client::new QRPC::Locator::new "test"
     
-    client.subtract(2, 3) { |result| puts result }  # prints out -1
+    EM::run do
+        client = QRPC::Client::new QRPC::Locator::new "test"
+        client.subtract(2, 3) { |result| puts result }  # prints out -1
+    end
     
 This connects to the *test* queue at default server *localhost:11300*,
 puts request to the real queue name *qrpc-test-input* and waits and then
-prints the result from queue `qrpc-<client-id>-output` queue.
+prints the result from `qrpc-<client-id>-output` queue.
     
-Client is implemented as evented too, but in case of need you can 
+Client is implemented as [evented][1] too, but in case of need you can 
 implement another one with non-evented interface using whatever 
-Beanstalk client you like of sure.
+[beanstalkd][2] client you like of sure.
 
 Contributing
 ------------
