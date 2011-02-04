@@ -69,7 +69,7 @@ And in case of exception:
 Both `backtrace` and `dump` members are optional.
 
     
-### Usage
+### Server Usage
 
 Usage is simple. Look example:
 
@@ -81,8 +81,8 @@ Usage is simple. Look example:
         end
     end
 
-    server = QRPC::Server::new(Foo::new)
-    server.listen! QRPC::Locator::new("test")
+    server = QRPC::Server::new Foo::new
+    server.listen! QRPC::Locator::new "test"
     
 This creates an instance of `Foo` which will serve as API, creates
 locator of the queue *test* at default server *localhost:11300*. Queue 
@@ -98,7 +98,22 @@ or `#start_listening`.
 
 Reponse will be put to the same queue server, to queue named 
 `qrpc-<client identifier>-output`, with structure described above. 
-Client isn't implemented at this time.
+
+### Client Usage
+
+Client usage is simple too. Look example:
+    require "qrpc/client"
+    client = QRPC::Client::new QRPC::Locator::new "test"
+    
+    client.subtract(2, 3) { |result| puts result }  # prints out -1
+    
+This connects to the *test* queue at default server *localhost:11300*,
+puts request to the real queue name *qrpc-test-input* and waits and then
+prints the result from queue *qrpc-<client-id>-output* queue.
+    
+Client is implemented as evented too, but in case of need you can 
+implement another one with non-evented interface using whatever 
+Beanstalk client you like of sure.
 
 Contributing
 ------------
