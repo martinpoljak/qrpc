@@ -15,24 +15,27 @@ module QRPC
     
         ##
         # Contains queue name.
+        # @return [Symbol]
         #
-        
-        @queue
+
         attr_accessor :queue
+        @queue
         
         ##
         # Contains host.
+        # @return [String]
         #
-        
-        @host
+
         attr_accessor :host
+        @host
         
         ##
         # Contains port.
+        # @return [Integer]
         #
-        
-        @port
+
         attr_accessor :port
+        @port
         
         ##
         # Parser.

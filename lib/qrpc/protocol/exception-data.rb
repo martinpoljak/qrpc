@@ -31,31 +31,35 @@ module QRPC
             
             ##
             # Holds exception name.
+            # @return [Symbol]
             #
             
-            @name
             attr_accessor :name
+            @name
             
             ##
             # Holds exception message.
+            # @return [String]
             #
             
-            @message
             attr_accessor :message
+            @message
             
             ##
-            # Holds backtrace.
+            # Holds backtrace. See readme for structure details.
+            # @return [Array]
             #
             
-            @backtrace
             attr_accessor :backtrace
+            @backtrace
             
             ##
-            # Holds native dump.
+            # Holds native dump. See readme for structure details.
+            # @return [Class]
             #
             
-            @dump
             attr_accessor :dump
+            @dump
             
             ##
             # Indicates, data are encoded and should be decoded.
@@ -66,9 +70,21 @@ module QRPC
             ##
             # Creates new QRPC JSON-RPC object.
             #
+            # @overload create(exception, nil, opts = { })
+            #   Creates from exception.
+            #   @param [Exception] exception exception object
+            #   @param [NilClass] nil (not applicable)
+            #   @param [Hash] opts optional members of object
+            # @overload create(name, message, opts = { })
+            #   Creates from exception description.
+            #   @param [Symbol, String] name exception name
+            #   @param [Object] exception message
+            #   @param [Hash] opts optional members of object
+            # @return [QRPC::Protocol::ExceptionData]  new instance
+            #
             
             def self.create(arg1, message = nil, opts = { })
-                if arg1.kind_of? Exception
+                if arg1.kind_of? ::Exception
                     mode = :decoded
                     data = {
                         :name => arg1.class.name,

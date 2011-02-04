@@ -28,6 +28,13 @@ module QRPC
             ##
             # Creates new QRPC request.
             #
+            # @param [Symbol] client_id  client (session) ID
+            # @param [Symbol] method  job method name
+            # @param [Array] arguments  array of arguments for job
+            # @param [Integer] priority  job priority
+            # @param [Proc] callback  result callback
+            # @return [QRPC::Protocol::Request] new protocol request object
+            #
             
             def self.create(client_id, id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY)
                 qrpc = QRPC::Protocol::QrpcObject::create(:client => client_id, :priority => priority)

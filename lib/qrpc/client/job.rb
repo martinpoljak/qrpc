@@ -68,6 +68,12 @@ module QRPC
             ##
             # Constructor.
             #
+            # @param [Symbol] client_id  client (session) ID
+            # @param [Symbol] method  job method name
+            # @param [Array] arguments  array of arguments for job
+            # @param [Integer] priority  job priority
+            # @param [Proc] callback  result callback
+            #
             
             def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, &callback)
                 @client_id = client_id
@@ -79,6 +85,7 @@ module QRPC
             
             ##
             # Returns job ID.
+            # @return [Symbol] job ID
             #
             
             def id
@@ -91,6 +98,7 @@ module QRPC
             
             ##
             # Converts job to JSON.
+            # @return [String] job in JSON form (JSON-RPC)
             #
             
             def to_json
@@ -101,6 +109,8 @@ module QRPC
             # Indicates message is notification. So callback isn't set
             # and it doesn't expect any result.
             #
+            # @return [Boolean] +true+ if it's, +false+ in otherwise
+            #
             
             def notification?
                 @callback.nil?
@@ -108,6 +118,7 @@ module QRPC
             
             ##
             # Assigns job result and subsequently calls callback.
+            # @param [JsonRpcObjects::Generic::Response] result of the call
             #
             
             def assign_result(result)

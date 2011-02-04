@@ -262,6 +262,7 @@ module QRPC
         
         ##
         # Returns client (or maybe session is better) ID.
+        # @return [Symbol] client (session) ID
         #
         
         def id

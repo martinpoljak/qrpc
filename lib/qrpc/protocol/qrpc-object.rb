@@ -1,4 +1,4 @@
-# encoding: utf-8
+# encoding: utf-8   
 require "json-rpc-objects/generic/object"
 require "json-rpc-objects/request"
 
@@ -33,6 +33,9 @@ module QRPC
             
             ##
             # Creates new QRPC JSON-RPC object.
+            #
+            # @param [Hash] QRPC object optional arguments
+            # @return [QRPC::Protocol::QrpcObject] new instance
             #
             
             def self.create(opts = { })
