@@ -113,7 +113,10 @@ Client usage is simple too. Look example:
     
 This connects to the *test* queue at default server *localhost:11300*,
 puts request to the real queue name *qrpc-test-input* and waits and then
-prints the result from `qrpc-<client-id>-output` queue.
+prints the result from `qrpc-<client-id>-output` queue. In case of 
+multiple requests should be noted, results can arrive in any order 
+because, of sure, QRPC is pseudo-fibered and asynchronous from 
+its principle.
     
 Client is implemented as [evented][1] too, but in case of need you can 
 implement another one with non-evented interface using whatever 
