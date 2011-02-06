@@ -18,10 +18,13 @@ GEM
       multitype-introspection (>= 0.1.0)
       types (>= 0.1.0)
       yajl-ruby (>= 0.7.8)
+    macaddr (1.0.0)
     multitype-introspection (0.1.2)
     rake (0.8.7)
     types (0.1.2)
       multitype-introspection (>= 0.1.0)
+    uuid (2.3.1)
+      macaddr (~> 1.0)
     yajl-ruby (0.7.9)
 
 PLATFORMS
@@ -34,3 +37,4 @@ DEPENDENCIES
   eventmachine (>= 0.12.10)
   jeweler (~> 1.5.2)
   json-rpc-objects (>= 0.3.1)
+  uuid (>= 2.3.1)

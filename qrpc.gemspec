@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{qrpc}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Martin Kozák"]
-  s.date = %q{2011-02-04}
+  s.date = %q{2011-02-06}
   s.email = %q{martinkozak@martinkozak.net}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -54,6 +54,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<depq>, [">= 0.4"])
       s.add_runtime_dependency(%q<em-jack>, [">= 0.1.3"])
       s.add_runtime_dependency(%q<eventmachine>, [">= 0.12.10"])
+      s.add_runtime_dependency(%q<uuid>, [">= 2.3.1"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
     else
@@ -61,6 +62,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<depq>, [">= 0.4"])
       s.add_dependency(%q<em-jack>, [">= 0.1.3"])
       s.add_dependency(%q<eventmachine>, [">= 0.12.10"])
+      s.add_dependency(%q<uuid>, [">= 2.3.1"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
     end
@@ -69,6 +71,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<depq>, [">= 0.4"])
     s.add_dependency(%q<em-jack>, [">= 0.1.3"])
     s.add_dependency(%q<eventmachine>, [">= 0.12.10"])
+    s.add_dependency(%q<uuid>, [">= 2.3.1"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
   end
