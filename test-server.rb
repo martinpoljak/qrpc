@@ -10,4 +10,4 @@ end
 
 require "qrpc/server"
 server = QRPC::Server::new(Foo::new)
-server.listen! QRPC::Locator::new("test")
+server.listen! QRPC::Locator::new("test"), :max_jobs => 0

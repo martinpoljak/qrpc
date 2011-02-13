@@ -180,9 +180,17 @@ module QRPC
             
             # Process input queue
             self.input_queue do |queue|
-                queue.each_job do |job|
-                    self.process_job(job)
+                worker = Proc::new do
+                    @dispatcher.available? do
+                        queue.reserve do |job|
+                            self.process_job(job)
+                            job.delete()
+                            worker.call()
+                        end
+                    end
                 end
+                
+                worker.call()
             end
         end
         

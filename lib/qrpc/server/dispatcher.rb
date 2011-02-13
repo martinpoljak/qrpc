@@ -34,16 +34,23 @@ module QRPC
             @max_jobs
             
             ##
+            # Holds "full state" locking mutex.
+            #
+            
+            @mutex
+            
+            ##
             # Constructor.
             #
             
-            def initialize(max_jobs = 20)
+            def initialize(max_jobs = 0)
                 @count = 0
                 @queue = Depq::new
+                @mutex = Mutex::new
                 @max_jobs = max_jobs
                 
                 if @max_jobs.nil?
-                    @max_jobs = 20
+                    @max_jobs = 0
                 end
             end
             
@@ -59,9 +66,10 @@ module QRPC
                     return
                 end
                 
-                if @count < @max_jobs
+                if self.available?
                     self.process_next!
                     @count += 1
+                    self.regulate!
                 end
             end
             
@@ -72,14 +80,53 @@ module QRPC
             def process_next!
                 job = @queue.pop
                 job.callback do
-                    if (@count < @max_jobs) and not @queue.empty?
+                    if self.available? and not @queue.empty?
                         self.process_next!
                     else
                         @count -= 1
+                        self.regulate!
                     end
                 end
 
                 job.process!
+            end
+            
+            ##
+            # Indicates free space is available in dispatcher.
+            #
+            # If block is given, locks to time space in dispatcher is 
+            # available so works as synchronization primitive by this 
+            # way.
+            #
+            # @overload available?
+            #   @return [Boolean] +true+ if it is, +false+ in otherwise
+            # @overload available?(&block)
+            #   @param [Proc] block synchronized block
+            #
+            
+            def available?(&block)
+                if block.nil?
+                    return ((@count < @max_jobs) or (@max_jobs == 0))
+                else
+                    @mutex.synchronize(&block)
+                end
+            end
+            
+            
+            protected
+            
+            ##
+            # Regulates by locking the dispatcher it if it's full.
+            #
+            
+            def regulate!
+                if self.available?
+                    if @mutex.locked?
+                        @mutex.unlock
+                    end
+                else
+                    @mutex.try_lock
+                end
             end
             
         end

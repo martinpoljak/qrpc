@@ -218,7 +218,7 @@ module QRPC
 
                         # Results pooler error handler
                         @input_queue.on_error do |error|
-                            raise Exception::new("Beanstalk error: " << error.to_s)
+                            raise ::Exception::new("Beanstalk error: " << error.to_s)
                         end
                         
                         # Returns

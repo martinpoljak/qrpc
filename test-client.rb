@@ -7,19 +7,27 @@ require "eventmachine"
 
 EM::run do
     client = QRPC::Client::new QRPC::Locator::new :test
-    puts client.inspect
+#    puts client.inspect
 
-    client.subtract(2, 3) do |i|
-        puts i
+#    client.something_bad do |i|
+#        puts i
+#    end
+
+    count = 0
+
+    10000.times do
+        client.subtract(2, 3) do |i|
+#            puts i
+            count += 1
+            if count >= 10000
+                EM::stop
+            end
+        end
     end
     
-    client.subtract(3, 2) do |i|
-        puts i
-    end
-    
-    client.something_bad do |i|
-        puts i
-    end
+#    client.subtract(3, 2) do |i|
+#        puts i
+#    end
 end
 
 =begin
