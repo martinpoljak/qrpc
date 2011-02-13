@@ -1,11 +1,14 @@
 
-0.2.1 (2011-02-13)
+0.2.2 (2011-02-13)
 * subminor bug corrections
 * beanstalkd queue now isn't emptified independently of the max 
   job settings
 * max jobs set to 0 means, it's unlimited
 * max job settings is now 0 by default
 * minor performance optimizations
+
+0.2.1 (2011-02-06)
+* missing UUID dependency in gem specification
 
 0.2.0 (2011-02-04)
 * client implemented
