@@ -6,6 +6,7 @@
 * max jobs set to 0 means, it's unlimited
 * max job settings is now 0 by default
 * minor performance optimizations
+* hash-utils gem dependency removed
 
 0.2.1 (2011-02-06)
 * missing UUID dependency in gem specification
