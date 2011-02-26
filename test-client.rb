@@ -5,6 +5,7 @@ require "qrpc/client"
 require "qrpc/locator"
 require "eventmachine"
 
+=begin
 EM::run do
     client = QRPC::Client::new QRPC::Locator::new :test
 #    puts client.inspect
@@ -29,8 +30,8 @@ EM::run do
 #        puts i
 #    end
 end
+=end
 
-=begin
 require "beanstalk-client"
 require "json-rpc-objects/request"
 

@@ -10,6 +10,11 @@ module QRPC
     ##
     # Queue RPC client.
     #
+    # @note Since 0.3.0, all non-system methods was moved to the 
+    #   {Dispatcher} module for maximal avoiding the user API 
+    #   name conflicts.
+    # @since 0.2.0
+    #
     
     class Client
     
