@@ -75,6 +75,7 @@ module QRPC
                 end
 
                 response = request.class::version.response::create(result, error, :id => request.id)
+                response.serializer = QRPC::DEFAULT_SERIALIZER
                 response.qrpc = QRPC::Protocol::QrpcObject::create
                 
                 @job.delete()
@@ -88,7 +89,7 @@ module QRPC
             
             def request
                 if @request.nil?
-                    @request = JsonRpcObjects::Request::parse(@job.body)
+                    @request = JsonRpcObjects::Request::parse(@job.body, :wd, QRPC::DEFAULT_SERIALIZER)
                 end
                 
                 return @request
