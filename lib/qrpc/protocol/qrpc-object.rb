@@ -60,14 +60,14 @@ module QRPC
             #
 
             def output
-                result = { :version => :"1.0.1" }
+                result = { "version" => "1.0.1" }
                 
                 if not @priority.nil?
-                    result[:priority] = @priority
+                    result["priority"] = @priority
                 end
                 
                 if not @client.nil?
-                    result[:client] = @client
+                    result["client"] = @client
                 end
                 
                 return result
