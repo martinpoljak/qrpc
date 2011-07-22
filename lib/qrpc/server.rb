@@ -96,6 +96,13 @@ module QRPC
         @output_used
         
         ##
+        # Holds data serializer.
+        # @since 0.4.0
+        #
+        
+        @serializer
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -103,12 +110,16 @@ module QRPC
 
         ##
         # Constructor.
+        #
         # @param [Object] api some object which will be used as RPC API
+        # @param [JsonRpcObjects::Serializer] serializer  data serializer
         #
         
-        def initialize(api)
+        def initialize(api, serializer = QRPC::default_serializer)
             @api = api
+            @serializer = serializer
             @output_name_cache = { }
+            
             
             # Destructor
             ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
@@ -166,7 +177,7 @@ module QRPC
         # (Blocking queue which expect, eventmachine is started.)        
         #
         # @param [QRPC::Locator] locator of the input queue
-        # @param [Hash] opts options for the server
+        # @param [Hash] opts options for   the server
         #
         
         def start_listening(locator, opts)
@@ -236,7 +247,7 @@ module QRPC
             client_index = client.to_sym
             
             if not @output_name_cache.include? client_index
-               output_name = QRPC::QUEUE_PREFIX.dup << "-" << client.to_s << "-" << QRPC::QUEUE_POSTFIX_OUTPUT
+               output_name = QRPC::QUEUE_PREFIX + "-" + client.to_s + "-" + QRPC::QUEUE_POSTFIX_OUTPUT
                output_name = output_name.to_sym
                @output_name_cache[client_index] = output_name
             else
@@ -255,7 +266,7 @@ module QRPC
         
         def input_name
             if @input_name.nil?
-                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                @input_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
             end
             
             return @input_name
@@ -270,7 +281,7 @@ module QRPC
         #
         
         def process_job(job)
-            our_job = QRPC::Server::Job::new(@api, job) 
+            our_job = QRPC::Server::Job::new(@api, job, @serializer) 
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
                 output_name = self.output_name(our_job.client)

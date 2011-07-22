@@ -48,15 +48,24 @@ module QRPC
             @api
             
             ##
+            # Holds data serializer.
+            # @since 0.4.0
+            #
+            
+            @serializer
+            
+            ##
             # Constructor.
             #
             # @param [Object] object which will serve as API
             # @param [EM::Beanstalk::Job] job beanstalk job
+            # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(api, job)
+            def initialize(api, job, serializer = QRPC::default_serializer)
                 @api = api
                 @job = job
+                @serializer = serializer
             end
             
             ##
@@ -75,7 +84,7 @@ module QRPC
                 end
 
                 response = request.class::version.response::create(result, error, :id => request.id)
-                response.serializer = QRPC::DEFAULT_SERIALIZER
+                response.serializer = @serializer
                 response.qrpc = QRPC::Protocol::QrpcObject::create
                 
                 @job.delete()
@@ -89,7 +98,7 @@ module QRPC
             
             def request
                 if @request.nil?
-                    @request = JsonRpcObjects::Request::parse(@job.body, :wd, QRPC::DEFAULT_SERIALIZER)
+                    @request = JsonRpcObjects::Request::parse(@job.body, :wd, @serializer)
                 end
                 
                 return @request

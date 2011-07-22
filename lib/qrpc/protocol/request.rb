@@ -36,7 +36,7 @@ module QRPC
             # @return [QRPC::Protocol::Request] new protocol request object
             #
             
-            def self.create(client_id, id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, serializer = QRPC::DEFAULT_SERIALIZER)
+            def self.create(client_id, id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, serializer = QRPC::default_serializer)
                 qrpc = QRPC::Protocol::QrpcObject::create(:client => client_id, :priority => priority)
                 obj = super(method, arguments, :id => id, :qrpc => qrpc)
                 obj.serializer = serializer

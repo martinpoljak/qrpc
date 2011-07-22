@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "qrpc/client/dispatcher"
+require "qrpc/general"
 
 ##
 # General QRPC module.
@@ -30,11 +31,13 @@ module QRPC
         
         ##
         # Constructor.
+        #
         # @param [QRPC::Locator] locator of the output queue
+        # @param [JsonRpcObjects::Serializer] serializer data serializer
         #
         
-        def initialize(locator)
-            @dispatcher = QRPC::Client::Dispatcher::new(locator)
+        def initialize(locator, serializer = QRPC::default_serializer)
+            @dispatcher = QRPC::Client::Dispatcher::new(locator, serializer)
         end
                 
         ##
@@ -45,7 +48,7 @@ module QRPC
         #
         # @param [Symbol] name name of the called methods
         # @param [Array] args arguments of the called methods
-        # @param [Proc] block callback for returning result
+        # @param [Proc] block callback for returning 
         #
         
         def method_missing(name, *args, &block)

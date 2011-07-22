@@ -71,7 +71,7 @@ module QRPC
             
             @pooling
             
-            ##
+            ##\
             # Holds clients for finalizing.
             #
             
@@ -80,10 +80,13 @@ module QRPC
             
             ##
             # Constructor.
+            #
             # @param [QRPC::Locator] locator of the output queue
+            # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(locator)
+            def initialize(locator, serializer = QRPC::default_serializer)
+                @serializer = serializer
                 @locator = locator
                 @pooling = false
                 @jobs = { }
@@ -135,7 +138,7 @@ module QRPC
             #
             
             def create_job(name, args, priority = QRPC::DEFAULT_PRIORITY, &block)
-                Client::Job::new(self.id, name, args, priority, &block)
+                Client::Job::new(self.id, name, args, priority, @serializer, &block)
             end
             
             ##
@@ -164,7 +167,7 @@ module QRPC
                 
                 # Results processing logic
                 processor = Proc::new do |job|
-                    response = JsonRpcObjects::Response::parse(job.body)
+                    response = JsonRpcObjects::Response::parse(job.body, :wd, @serializer)
                     id = response.id.to_sym
                     job.delete()
                     
@@ -195,7 +198,7 @@ module QRPC
             
             def input_name
                 if @input_name.nil?
-                    @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << self.id.to_s << "-" << QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
+                    @input_name = (QRPC::QUEUE_PREFIX + "-" + self.id.to_s + "-" + QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
                 end
                 
                 return @input_name
@@ -234,7 +237,7 @@ module QRPC
             
             def output_name
                 if @output_name.nil?
-                    @output_name = (QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                    @output_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
                 end
                 
                 return @output_name
