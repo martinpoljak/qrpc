@@ -44,7 +44,8 @@ module QRPC
         # Handles call to RPC. (*********)
         #
         # Be warn, arguments will be serialized to JSON, so they should
-        # be serializable nativelly or implement +#to_json+ method.
+        # be serializable nativelly or implement +#to_s+ or +#to_json+ 
+        # method.
         #
         # @param [Symbol] name name of the called methods
         # @param [Array] args arguments of the called methods

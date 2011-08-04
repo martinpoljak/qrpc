@@ -151,7 +151,7 @@ module QRPC
                 end
                 
                 self.output_queue do |queue|
-                    queue.put(job.to_json)
+                    queue.put(job.serialize)
                 end
                 
                 if (not @pooling) and (@jobs.length > 0)

@@ -85,10 +85,10 @@ module QRPC
 
                 response = request.class::version.response::create(result, error, :id => request.id)
                 response.serializer = @serializer
-                response.qrpc = QRPC::Protocol::QrpcObject::create
+                response.qrpc = QRPC::Protocol::QrpcObject::create.output
                 
                 @job.delete()
-                self.set_deferred_status(:succeeded, response.to_json)
+                self.set_deferred_status(:succeeded, response.serialize)
             end
 
             ##
@@ -100,7 +100,7 @@ module QRPC
                 if @request.nil?
                     @request = JsonRpcObjects::Request::parse(@job.body, :wd, @serializer)
                 end
-                
+
                 return @request
             end
             
@@ -142,7 +142,7 @@ module QRPC
             
             def generate_error(request, exception)
                 data = QRPC::Protocol::ExceptionData::create(exception)
-                request.class::version.error::create(100, "exception raised during processing the request", :error => data)
+                request.class::version.error::create(100, "exception raised during processing the request", :error => data.output)
             end
               
         end

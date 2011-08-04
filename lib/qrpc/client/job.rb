@@ -112,13 +112,27 @@ module QRPC
             
             ##
             # Converts job to JSON.
+            #
             # @return [String] job in JSON form (JSON-RPC)
+            # @deprecated Sice 0.4.0. Use +#serialize+.
+            # @see #serialize
             #
             
             def to_json
-                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority, @serializer).to_json
+                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
             end
+
+            ##
+            # Serializes job using serializer.
+            #
+            # @return [Object] serialized object
+            # @since 0.4.0
+            #
             
+            def serialize
+                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority, @serializer).serialize
+            end
+             
             ##
             # Indicates message is notification. So callback isn't set
             # and it doesn't expect any result.
