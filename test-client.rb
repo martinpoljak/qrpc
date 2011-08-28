@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require "rubygems"
+
 $:.push("./lib")
 require "qrpc/client"
 require "qrpc/locator"
