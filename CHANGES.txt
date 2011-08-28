@@ -1,4 +1,8 @@
 
+0.3.2 (2011-08-28)
+* UUID of the client now generated in compact format
+* compatiblity corrections with OkJson
+
 0.3.1 (2011-08-04)
 * UUID of the jobs now generated in compact format
 
