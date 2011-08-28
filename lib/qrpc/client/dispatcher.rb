@@ -266,7 +266,7 @@ module QRPC
             
             def id
                 if @id.nil?
-                    @id = UUID.generate.to_sym
+                    @id = UUID.generate(:compact).to_sym
                 end
                 
                 return @id
