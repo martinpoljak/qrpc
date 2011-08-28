@@ -67,7 +67,7 @@ module QRPC
                 end
                 
                 if not @client.nil?
-                    result["client"] = @client
+                    result["client"] = @client.to_s
                 end
                 
                 return result

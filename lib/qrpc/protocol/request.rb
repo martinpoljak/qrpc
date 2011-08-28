@@ -38,7 +38,7 @@ module QRPC
             
             def self.create(client_id, id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY)
                 qrpc = QRPC::Protocol::QrpcObject::create(:client => client_id, :priority => priority)
-                super(method, arguments, :id => id, :qrpc => qrpc)
+                super(method, arguments, :id => id.to_s, :qrpc => qrpc)
             end
         end
                 
