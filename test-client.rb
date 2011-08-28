@@ -7,7 +7,7 @@ require "qrpc/client"
 require "qrpc/locator"
 require "eventmachine"
 
-=begin
+
 EM::run do
     client = QRPC::Client::new QRPC::Locator::new :test
 #    puts client.inspect
@@ -20,7 +20,7 @@ EM::run do
 
     10000.times do
         client.subtract(2, 3) do |i|
-#            puts i
+            puts i
             count += 1
             if count >= 10000
                 EM::stop
@@ -32,8 +32,8 @@ EM::run do
 #        puts i
 #    end
 end
-=end
 
+=begin
 require "beanstalk-client"
 require "json-rpc-objects/request"
 
@@ -53,7 +53,7 @@ job.delete
 job = b.reserve
 puts job.body
 job.delete
-
+=end
 =begin
 100.times do
     b.put(req1.to_json)
