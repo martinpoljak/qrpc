@@ -5,7 +5,7 @@ source "http://rubygems.org"
    gem "depq", ">= 0.4"
    gem "em-jack", ">= 0.1.3"
    gem "eventmachine", ">= 0"
-   gem "uuid", ">= 0"
+   gem "uuid", ">= 2.0.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

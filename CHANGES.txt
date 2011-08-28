@@ -1,5 +1,8 @@
 
-0.3.0
+0.3.1 (2011-08-04)
+* UUID of the jobs now generated in compact format
+
+0.3.0 (2011-02-27)
 * bad json-rpc-object dependency (but noncritical, some special cases
     performance lag only)
 * all public methods from Client moved to Client::Dispatcher

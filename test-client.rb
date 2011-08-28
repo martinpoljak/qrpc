@@ -7,14 +7,14 @@ require "qrpc/client"
 require "qrpc/locator"
 require "eventmachine"
 
-require "json-rpc-objects/serializer/bson"
+#require "json-rpc-objects/serializer/bson"
 require "json-rpc-objects/serializer/json"
 require "json-rpc-objects/serializer/yaml"
 require "json-rpc-objects/serializer/marshal"
-require "json-rpc-objects/serializer/msgpack"
+#require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
-    client = QRPC::Client::new(QRPC::Locator::new(:test), JsonRpcObjects::Serializer::BSON::new)
+    client = QRPC::Client::new(QRPC::Locator::new(:test), JsonRpcObjects::Serializer::JSON::new)
 #    puts client.inspect
 
 #    client.something_bad do |i|
