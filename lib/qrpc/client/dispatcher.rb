@@ -165,11 +165,13 @@ module QRPC
                 # Results processing logic
                 processor = Proc::new do |job|
                     response = JsonRpcObjects::Response::parse(job.body)
-                    id = response.id.to_sym
                     job.delete()
                     
-                    if @jobs.include? id
-                        @jobs[id].assign_result(response)
+                    if not response.id.nil?
+                        id = response.id.to_sym
+                        if @jobs.include? id
+                            @jobs[id].assign_result(response)
+                        end
                     end
                     
                     @jobs.delete(id)
