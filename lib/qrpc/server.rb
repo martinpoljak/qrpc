@@ -177,10 +177,10 @@ module QRPC
         # (Blocking queue which expect, eventmachine is started.)        
         #
         # @param [QRPC::Locator] locator of the input queue
-        # @param [Hash] opts options for   the server
+        # @param [Hash] opts options for the server
         #
         
-        def start_listening(locator, opts)
+        def start_listening(locator, opts = { })
             @locator = locator
             @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
             
