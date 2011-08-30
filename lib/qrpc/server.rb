@@ -169,7 +169,7 @@ module QRPC
         # @param [Hash] opts options for the server
         #
         
-        def start_listening(locator, opts)
+        def start_listening(locator, opts = { })
             @locator = locator
             @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
             
