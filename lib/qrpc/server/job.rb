@@ -48,6 +48,13 @@ module QRPC
             @api
             
             ##
+            # Indicates API methods synchronicity.
+            # @since 0.4.0
+            #
+            
+            @synchronicity
+            
+            ##
             # Holds data serializer.
             # @since 0.4.0
             #
@@ -58,12 +65,14 @@ module QRPC
             # Constructor.
             #
             # @param [Object] object which will serve as API
+            # @param [Symbol] synchronicity  API methods synchronicity
             # @param [EM::Beanstalk::Job] job beanstalk job
             # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(api, job, serializer = QRPC::default_serializer)
+            def initialize(api, synchonicity, job, serializer = QRPC::default_serializer)
                 @api = api
+                @synchonicity = synchonicity
                 @job = job
                 @serializer = serializer
             end
@@ -77,18 +86,35 @@ module QRPC
                 error = nil
                 request = self.request
                 
-                begin
-                    result = @api.send(request.method, *request.params)
-                rescue ::Exception => e
-                    error = self.generate_error(request, e)
+                finalize = Proc::new do
+                    response = request.class::version.response::create(result, error, :id => request.id)
+                    response.serializer = @serializer
+                    response.qrpc = QRPC::Protocol::QrpcObject::create.output
+                    
+                    @job.delete()
+                    self.set_deferred_status(:succeeded, response.serialize)
                 end
 
-                response = request.class::version.response::create(result, error, :id => request.id)
-                response.serializer = @serializer
-                response.qrpc = QRPC::Protocol::QrpcObject::create.output
                 
-                @job.delete()
-                self.set_deferred_status(:succeeded, response.serialize)
+                if @synchronicity == :synchronous
+                    begin
+                        result = @api.send(request.method, *request.params)
+                    rescue ::Exception => e
+                        error = self.generate_error(request, e)
+                    end
+
+                    finalize.call()
+                else                
+                    begin
+                        @api.send(request.method, *request.params) do |res|
+                            result = res
+                            finalize.call()
+                        end
+                    rescue ::Exception => e
+                        error = self.generate_error(request, e)
+                        finalize.call()
+                    end                    
+                end
             end
 
             ##

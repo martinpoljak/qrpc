@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "depq"
-
+require "options-hash"
 
 ##
 # General QRPC module.
@@ -32,7 +32,7 @@ module QRPC
             #
             
             @max_jobs
-            
+                    
             ##
             # Holds "full state" locking mutex.
             #
@@ -41,17 +41,19 @@ module QRPC
             
             ##
             # Constructor.
+            # @param [Hash] opts  array of options
             #
             
-            def initialize(max_jobs = 0)
+            def initialize(opts = { })
                 @count = 0
                 @queue = Depq::new
                 @mutex = Mutex::new
-                @max_jobs = max_jobs
                 
-                if @max_jobs.nil?
-                    @max_jobs = 0
-                end
+                opts = OptionsHash::get(opts)[
+                    :max_jobs => 20
+                ];
+                
+                @max_jobs = opts.max_jobs
             end
             
             ##

@@ -103,6 +103,13 @@ module QRPC
         @serializer
         
         ##
+        # Indicates API methods synchronicity.
+        # @since 0.4.0
+        #
+        
+        @synchronicity
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -112,14 +119,15 @@ module QRPC
         # Constructor.
         #
         # @param [Object] api some object which will be used as RPC API
+        # @param [Symbol] synchronicity  API methods synchronicity
         # @param [JsonRpcObjects::Serializer] serializer  data serializer
         #
         
-        def initialize(api, serializer = QRPC::default_serializer)
+        def initialize(api, synchronicity = :synchronous, serializer = QRPC::default_serializer)
             @api = api
             @serializer = serializer
+            @synchronicity = synchronicity
             @output_name_cache = { }
-            
             
             # Destructor
             ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
@@ -182,7 +190,9 @@ module QRPC
         
         def start_listening(locator, opts = { })
             @locator = locator
-            @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
+            @dispatcher = QRPC::Server::Dispatcher::new({
+                :max_jobs => opts[:max_jobs]
+            })
             
             # Cache cleaning dispatcher
             EM.add_periodic_timer(20) do
@@ -281,7 +291,7 @@ module QRPC
         #
         
         def process_job(job)
-            our_job = QRPC::Server::Job::new(@api, job, @serializer) 
+            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer) 
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
                 output_name = self.output_name(our_job.client)
