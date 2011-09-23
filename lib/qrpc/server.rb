@@ -4,6 +4,7 @@ require "qrpc/server/job"
 require "qrpc/server/dispatcher"
 require "qrpc/locator"
 require "qrpc/protocol/qrpc-object"
+require "hash-utils/hash"   # >= 0.1.0
 require "em-jack"
 require "eventmachine"
 require "base64"
@@ -192,7 +193,7 @@ module QRPC
             @locator = locator
             @dispatcher = QRPC::Server::Dispatcher::new({
                 :max_jobs => opts[:max_jobs]
-            })
+            }.compact)
             
             # Cache cleaning dispatcher
             EM.add_periodic_timer(20) do

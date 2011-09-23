@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "depq"
 require "options-hash"
+require "callback-locker"
 
 ##
 # General QRPC module.
@@ -47,13 +48,14 @@ module QRPC
             def initialize(opts = { })
                 @count = 0
                 @queue = Depq::new
-                @mutex = Mutex::new
+                @mutex = CallbackLocker::new
                 
                 opts = OptionsHash::get(opts)[
                     :max_jobs => 20
                 ];
                 
                 @max_jobs = opts.max_jobs
+                @max_jobs = 20 if @max_jobs.nil? 
             end
             
             ##
@@ -82,8 +84,10 @@ module QRPC
             def process_next!
                 job = @queue.pop
                 job.callback do
-                    if self.available? and not @queue.empty?
-                        self.process_next!
+                    if self.available? 
+                        if not @queue.empty?
+                            self.process_next!
+                        end
                     else
                         @count -= 1
                         self.regulate!
