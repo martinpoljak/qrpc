@@ -17,5 +17,5 @@ end
 
 
 require "qrpc/server"
-server = QRPC::Server::new(Foo::new, JsonRpcObjects::Serializer::MessagePack::new)
+server = QRPC::Server::new(Foo::new, :synchronous, JsonRpcObjects::Serializer::MessagePack::new)
 server.listen! QRPC::Locator::new("test"), :max_jobs => 0

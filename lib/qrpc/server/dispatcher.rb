@@ -1,13 +1,16 @@
 # encoding: utf-8
 require "depq"
-require "options-hash"
-require "callback-locker"
 
 ##
 # General QRPC module.
 #
 
 module QRPC
+  
+    ##
+    # Queue RPC server.
+    #
+    
     class Server
         
         ##
@@ -17,28 +20,10 @@ module QRPC
         class Dispatcher
         
             ##
-            # Holds running EM fibers count.
-            #
-            
-            @count
-            
-            ##
             # Holds unprocessed jobs queue.
             #
             
             @queue
-            
-            ##
-            # Holds max jobs count.
-            #
-            
-            @max_jobs
-                    
-            ##
-            # Holds "full state" locking mutex.
-            #
-            
-            @mutex
             
             ##
             # Constructor.
@@ -46,16 +31,7 @@ module QRPC
             #
             
             def initialize(opts = { })
-                @count = 0
                 @queue = Depq::new
-                @mutex = CallbackLocker::new
-                
-                opts = OptionsHash::get(opts)[
-                    :max_jobs => 20
-                ];
-                
-                @max_jobs = opts.max_jobs
-                @max_jobs = 20 if @max_jobs.nil? 
             end
             
             ##
@@ -72,8 +48,6 @@ module QRPC
                 
                 if self.available?
                     self.process_next!
-                    @count += 1
-                    self.regulate!
                 end
             end
             
@@ -88,9 +62,6 @@ module QRPC
                         if not @queue.empty?
                             self.process_next!
                         end
-                    else
-                        @count -= 1
-                        self.regulate!
                     end
                 end
 
@@ -112,26 +83,9 @@ module QRPC
             
             def available?(&block)
                 if block.nil?
-                    return ((@count < @max_jobs) or (@max_jobs == 0))
+                    true
                 else
-                    @mutex.synchronize(&block)
-                end
-            end
-            
-            
-            protected
-            
-            ##
-            # Regulates by locking the dispatcher it if it's full.
-            #
-            
-            def regulate!
-                if self.available?
-                    if @mutex.locked?
-                        @mutex.unlock
-                    end
-                else
-                    @mutex.try_lock
+                    yield
                 end
             end
             

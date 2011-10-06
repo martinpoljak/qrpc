@@ -191,10 +191,8 @@ module QRPC
         
         def start_listening(locator, opts = { })
             @locator = locator
-            @dispatcher = QRPC::Server::Dispatcher::new({
-                :max_jobs => opts[:max_jobs]
-            }.compact)
-            
+            @dispatcher = QRPC::Server::Dispatcher::new
+
             # Cache cleaning dispatcher
             EM.add_periodic_timer(20) do
                 @output_name_cache.clear
@@ -292,11 +290,11 @@ module QRPC
         #
         
         def process_job(job)
-            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer) 
+            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
                 output_name = self.output_name(our_job.client)
-
+                
                 if @output_used != output_name 
                     @output_used = output_name
                     self.output_queue.use(output_name.to_s, &call)

@@ -70,9 +70,9 @@ module QRPC
             # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(api, synchonicity, job, serializer = QRPC::default_serializer)
+            def initialize(api, synchronicity, job, serializer = QRPC::default_serializer)
                 @api = api
-                @synchonicity = synchonicity
+                @synchronicity = synchronicity
                 @job = job
                 @serializer = serializer
             end

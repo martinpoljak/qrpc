@@ -24,15 +24,25 @@ EM::run do
 
     count = 0
 
-    10000.times do
+    make = Proc::new do
         client.subtract(2, 3) do |i|
             #puts i
             count += 1
-            if count >= 10000
+            if count >= 100000
                 EM::stop
             end
         end
+        
+        if count < 100000
+            EM::next_tick do
+                make.call()
+            end
+        else
+            EM::stop
+        end
     end
+    
+    make.call()
     
 #    client.subtract(3, 2) do |i|
 #        puts i
