@@ -1,5 +1,6 @@
 # encoding: utf-8
-require "depq"
+#require "depq"
+require "algorithms"
 
 ##
 # General QRPC module.
@@ -31,7 +32,8 @@ module QRPC
             #
             
             def initialize(opts = { })
-                @queue = Depq::new
+                #@queue = Depq::new
+                @queue = Containers::MaxHeap::new
             end
             
             ##
@@ -41,7 +43,7 @@ module QRPC
             
             def put(job)
                 begin
-                    @queue.put(job, job.priority)
+                    @queue.push(job.priority, job)
                 rescue ::Exception => e
                     return
                 end

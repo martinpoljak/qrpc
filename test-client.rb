@@ -28,12 +28,9 @@ EM::run do
         client.subtract(2, 3) do |i|
             #puts i
             count += 1
-            if count >= 100000
-                EM::stop
-            end
         end
         
-        if count < 100000
+        if count < 10000
             EM::next_tick do
                 make.call()
             end
