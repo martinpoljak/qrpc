@@ -1,6 +1,5 @@
 # encoding: utf-8
-#require "depq"
-require "algorithms"
+require "priority_queue/c_priority_queue"
 
 ##
 # General QRPC module.
@@ -33,7 +32,7 @@ module QRPC
             
             def initialize(opts = { })
                 #@queue = Depq::new
-                @queue = Containers::MaxHeap::new
+                @queue = CPriorityQueue::new
             end
             
             ##
@@ -43,7 +42,7 @@ module QRPC
             
             def put(job)
                 begin
-                    @queue.push(job.priority, job)
+                    @queue.push(job, -job.priority)
                 rescue ::Exception => e
                     return
                 end
@@ -58,7 +57,7 @@ module QRPC
             #
             
             def process_next!
-                job = @queue.pop
+                job = @queue.delete_min_return_key
                 job.callback do
                     if self.available? 
                         if not @queue.empty?

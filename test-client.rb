@@ -30,7 +30,7 @@ EM::run do
             count += 1
         end
         
-        if count < 10000
+        if count < 100000
             EM::next_tick do
                 make.call()
             end
