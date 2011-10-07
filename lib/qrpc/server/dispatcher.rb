@@ -31,7 +31,6 @@ module QRPC
             #
             
             def initialize(opts = { })
-                #@queue = Depq::new
                 @queue = CPriorityQueue::new
             end
             
