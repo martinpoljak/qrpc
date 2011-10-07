@@ -1,5 +1,4 @@
 # encoding: utf-8
-#require "depq"
 require "algorithms"
 
 ##
@@ -32,7 +31,6 @@ module QRPC
             #
             
             def initialize(opts = { })
-                #@queue = Depq::new
                 @queue = Containers::MaxHeap::new
             end
             
