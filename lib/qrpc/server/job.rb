@@ -48,15 +48,33 @@ module QRPC
             @api
             
             ##
+            # Indicates API methods synchronicity.
+            # @since 0.4.0
+            #
+            
+            @synchronicity
+            
+            ##
+            # Holds data serializer.
+            # @since 0.4.0
+            #
+            
+            @serializer
+            
+            ##
             # Constructor.
             #
             # @param [Object] object which will serve as API
+            # @param [Symbol] synchronicity  API methods synchronicity
             # @param [EM::Beanstalk::Job] job beanstalk job
+            # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(api, job)
+            def initialize(api, synchronicity, job, serializer = QRPC::default_serializer)
                 @api = api
+                @synchronicity = synchronicity
                 @job = job
+                @serializer = serializer
             end
             
             ##
@@ -68,17 +86,35 @@ module QRPC
                 error = nil
                 request = self.request
                 
-                begin
-                    result = @api.send(request.method, *request.params)
-                rescue ::Exception => e
-                    error = self.generate_error(request, e)
+                finalize = Proc::new do
+                    response = request.class::version.response::create(result, error, :id => request.id)
+                    response.serializer = @serializer
+                    response.qrpc = QRPC::Protocol::QrpcObject::create.output
+                    
+                    @job.delete()
+                    self.set_deferred_status(:succeeded, response.serialize)
                 end
 
-                response = request.class::version.response::create(result, error, :id => request.id)
-                response.qrpc = QRPC::Protocol::QrpcObject::create
                 
-                @job.delete()
-                self.set_deferred_status(:succeeded, response.to_json)
+                if @synchronicity == :synchronous
+                    begin
+                        result = @api.send(request.method, *request.params)
+                    rescue ::Exception => e
+                        error = self.generate_error(request, e)
+                    end
+
+                    finalize.call()
+                else                
+                    begin
+                        @api.send(request.method, *request.params) do |res|
+                            result = res
+                            finalize.call()
+                        end
+                    rescue ::Exception => e
+                        error = self.generate_error(request, e)
+                        finalize.call()
+                    end                    
+                end
             end
 
             ##
@@ -88,9 +124,9 @@ module QRPC
             
             def request
                 if @request.nil?
-                    @request = JsonRpcObjects::Request::parse(@job.body)
+                    @request = JsonRpcObjects::Request::parse(@job.body, :wd, @serializer)
                 end
-                
+
                 return @request
             end
             
@@ -132,7 +168,7 @@ module QRPC
             
             def generate_error(request, exception)
                 data = QRPC::Protocol::ExceptionData::create(exception)
-                request.class::version.error::create(100, "exception raised during processing the request", :error => data)
+                request.class::version.error::create(100, "exception raised during processing the request", :error => data.output)
             end
               
         end

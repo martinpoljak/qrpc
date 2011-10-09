@@ -4,6 +4,7 @@ require "qrpc/server/job"
 require "qrpc/server/dispatcher"
 require "qrpc/locator"
 require "qrpc/protocol/qrpc-object"
+require "hash-utils/hash"   # >= 0.1.0
 require "em-jack"
 require "eventmachine"
 require "base64"
@@ -96,6 +97,20 @@ module QRPC
         @output_used
         
         ##
+        # Holds data serializer.
+        # @since 0.4.0
+        #
+        
+        @serializer
+        
+        ##
+        # Indicates API methods synchronicity.
+        # @since 0.4.0
+        #
+        
+        @synchronicity
+        
+        ##
         # Holds servers for finalizing.
         #
         
@@ -103,11 +118,16 @@ module QRPC
 
         ##
         # Constructor.
+        #
         # @param [Object] api some object which will be used as RPC API
+        # @param [Symbol] synchronicity  API methods synchronicity
+        # @param [JsonRpcObjects::Serializer] serializer  data serializer
         #
         
-        def initialize(api)
+        def initialize(api, synchronicity = :synchronous, serializer = QRPC::default_serializer)
             @api = api
+            @serializer = serializer
+            @synchronicity = synchronicity
             @output_name_cache = { }
             
             # Destructor
@@ -171,8 +191,8 @@ module QRPC
         
         def start_listening(locator, opts = { })
             @locator = locator
-            @dispatcher = QRPC::Server::Dispatcher::new(opts[:max_jobs])
-            
+            @dispatcher = QRPC::Server::Dispatcher::new
+
             # Cache cleaning dispatcher
             EM.add_periodic_timer(20) do
                 @output_name_cache.clear
@@ -236,7 +256,7 @@ module QRPC
             client_index = client.to_sym
             
             if not @output_name_cache.include? client_index
-               output_name = QRPC::QUEUE_PREFIX.dup << "-" << client.to_s << "-" << QRPC::QUEUE_POSTFIX_OUTPUT
+               output_name = QRPC::QUEUE_PREFIX + "-" + client.to_s + "-" + QRPC::QUEUE_POSTFIX_OUTPUT
                output_name = output_name.to_sym
                @output_name_cache[client_index] = output_name
             else
@@ -255,7 +275,7 @@ module QRPC
         
         def input_name
             if @input_name.nil?
-                @input_name = (QRPC::QUEUE_PREFIX.dup << "-" << @locator.queue << "-" << QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                @input_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
             end
             
             return @input_name
@@ -270,11 +290,11 @@ module QRPC
         #
         
         def process_job(job)
-            our_job = QRPC::Server::Job::new(@api, job) 
+            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
                 call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
                 output_name = self.output_name(our_job.client)
-
+                
                 if @output_used != output_name 
                     @output_used = output_name
                     self.output_queue.use(output_name.to_s, &call)

@@ -1,11 +1,12 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
-   gem "json-rpc-objects", ">= 0.3.3"
-   gem "depq", ">= 0.4"
+   gem "json-rpc-objects", ">= 0.4.1"
+   gem "PriorityQueue", ">= 0.1.2"
    gem "em-jack", ">= 0.1.3"
    gem "eventmachine", ">= 0"
-   gem "uuid", ">= 2.3.2"
+   gem "uuid", ">= 2.0.0"
+   gem "hash-utils", ">= 0.1.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

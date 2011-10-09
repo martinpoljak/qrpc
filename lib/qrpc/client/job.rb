@@ -65,6 +65,13 @@ module QRPC
             @priority
             
             ##
+            # Data serializer.
+            # @since 0.4.0
+            #
+            
+            @serializer
+            
+            ##
             # Job result.
             #
             
@@ -77,15 +84,17 @@ module QRPC
             # @param [Symbol] method  job method name
             # @param [Array] arguments  array of arguments for job
             # @param [Integer] priority  job priority
+            # @param [JsonRpcObjects::Serializer] serializer  data serializer
             # @param [Proc] callback  result callback
             #
             
-            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, &callback)
+            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, serializer = QRPC::default_serializer, &callback)
                 @client_id = client_id
                 @method = method
                 @arguments = arguments
                 @callback = callback
                 @priority = priority
+                @serializer = serializer
             end
             
             ##
@@ -103,13 +112,27 @@ module QRPC
             
             ##
             # Converts job to JSON.
+            #
             # @return [String] job in JSON form (JSON-RPC)
+            # @deprecated Sice 0.4.0. Use +#serialize+.
+            # @see #serialize
             #
             
             def to_json
                 QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
             end
+
+            ##
+            # Serializes job using serializer.
+            #
+            # @return [Object] serialized object
+            # @since 0.4.0
+            #
             
+            def serialize
+                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority, @serializer).serialize
+            end
+             
             ##
             # Indicates message is notification. So callback isn't set
             # and it doesn't expect any result.

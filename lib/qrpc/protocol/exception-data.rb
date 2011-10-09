@@ -148,19 +148,19 @@ module QRPC
 
             def output
                 result = { 
-                    :name => @name.to_s,
-                    :message => @message,
+                    "name" => @name.to_s,
+                    "message" => @message,
                 }
                 
                 # Backtrace
                 if @backtrace.kind_of? Array
-                    result[:backtrace] = @backtrace.map { |i| Base64.encode64(i) }
+                    result["backtrace"] = @backtrace.map { |i| Base64.encode64(i) }
                 end
                    
                 # Dump
                 if not @dump.nil?
-                    result[:dump] = {
-                        :format => @dump.format,
+                    result["dump"] = {
+                        "format" => @dump.format,
                     }
                     
                     if not dump.object.nil?
@@ -169,7 +169,7 @@ module QRPC
                         raw = dump.raw
                     end
                     
-                    result[:dump][:raw] = raw
+                    result["dump"]["raw"] = raw
                 end
                 
                 return result

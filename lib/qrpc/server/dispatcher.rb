@@ -1,12 +1,16 @@
 # encoding: utf-8
-require "depq"
-
+require "priority_queue/c_priority_queue"
 
 ##
 # General QRPC module.
 #
 
 module QRPC
+  
+    ##
+    # Queue RPC server.
+    #
+    
     class Server
         
         ##
@@ -16,42 +20,18 @@ module QRPC
         class Dispatcher
         
             ##
-            # Holds running EM fibers count.
-            #
-            
-            @count
-            
-            ##
             # Holds unprocessed jobs queue.
             #
             
             @queue
             
             ##
-            # Holds max jobs count.
-            #
-            
-            @max_jobs
-            
-            ##
-            # Holds "full state" locking mutex.
-            #
-            
-            @mutex
-            
-            ##
             # Constructor.
+            # @param [Hash] opts  array of options
             #
             
-            def initialize(max_jobs = 0)
-                @count = 0
-                @queue = Depq::new
-                @mutex = Mutex::new
-                @max_jobs = max_jobs
-                
-                if @max_jobs.nil?
-                    @max_jobs = 0
-                end
+            def initialize(opts = { })
+                @queue = CPriorityQueue::new
             end
             
             ##
@@ -61,15 +41,13 @@ module QRPC
             
             def put(job)
                 begin
-                    @queue.put(job, job.priority)
+                    @queue.push(job, -job.priority)
                 rescue ::Exception => e
                     return
                 end
                 
                 if self.available?
                     self.process_next!
-                    @count += 1
-                    self.regulate!
                 end
             end
             
@@ -78,13 +56,12 @@ module QRPC
             #
             
             def process_next!
-                job = @queue.pop
+                job = @queue.delete_min_return_key
                 job.callback do
-                    if self.available? and not @queue.empty?
-                        self.process_next!
-                    else
-                        @count -= 1
-                        self.regulate!
+                    if self.available? 
+                        if not @queue.empty?
+                            self.process_next!
+                        end
                     end
                 end
 
@@ -106,26 +83,9 @@ module QRPC
             
             def available?(&block)
                 if block.nil?
-                    return ((@count < @max_jobs) or (@max_jobs == 0))
+                    true
                 else
-                    @mutex.synchronize(&block)
-                end
-            end
-            
-            
-            protected
-            
-            ##
-            # Regulates by locking the dispatcher it if it's full.
-            #
-            
-            def regulate!
-                if self.available?
-                    if @mutex.locked?
-                        @mutex.unlock
-                    end
-                else
-                    @mutex.try_lock
+                    yield
                 end
             end
             
