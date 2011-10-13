@@ -18,7 +18,7 @@ Jeweler::Tasks.new do |gem|
   gem.name = "qrpc"
   gem.homepage = "http://github.com/martinkozak/qrpc"
   gem.license = "MIT"
-  gem.summary = 'Queued JSON-RPC client and server. Works as normal RPC server, but through queue interface, so allows highly scalable, distributed and asynchronous remote API implementation and fast data processing. It\'s based on EventmMchine and Beanstalk, so it\'s fast and thread safe.'
+  gem.summary = 'Queued JSON-RPC client and server. Works as normal RPC server, but through queue interface, so allows highly scalable, distributed and asynchronous remote API implementation and fast data processing. It\'s based on EventMachine and Beanstalk, so it\'s fast and thread safe.'
   gem.email = "martinkozak@martinkozak.net"
   gem.authors = ["Martin Kozák"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
