@@ -1,8 +1,9 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "em-jack"
 require "uuid"
+require "em-jack"
+require "em-batch"
 require "qrpc/general"
 require "qrpc/client/job"
 require "json-rpc-objects/response"
@@ -115,16 +116,16 @@ module QRPC
             
             def finalize!
                 if not @input_queue.nil?
-                    @input_queue.watch("default") do
-                        @input_queue.ignore(@input_name.to_s) do
-                            @input_queue.close
+                    @input_queue.subscribe("default") do
+                        @input_queue.unsubscribe(@input_name.to_s) do
+                            @input_queue.close!
                         end
                     end
                 end
                 
                 if not @output_queue.nil?
                     @output_queue.use("default") do
-                        @output_queue.close
+                        @output_queue.close!
                     end
                 end
             end
@@ -153,7 +154,7 @@ module QRPC
                 end
                 
                 self.output_queue do |queue|
-                    queue.put(job.serialize)
+                    queue.push(job.serialize)
                 end
                 
                 if (not @pooling) and (@jobs.length > 0)
@@ -169,8 +170,7 @@ module QRPC
                 
                 # Results processing logic
                 processor = Proc::new do |job|
-                    response = JsonRpcObjects::Response::parse(job.body, :wd, @serializer)
-                    job.delete()
+                    response = JsonRpcObjects::Response::parse(job, :wd, @serializer)
                     
                     if not response.id.nil?
                         id = response.id.to_sym
@@ -182,15 +182,11 @@ module QRPC
                     @jobs.delete(id)
                 end
                 
-                # Runs processor for each job            
-                parent = self
-                worker = EM::spawn do
-                    parent.input_queue { |q| q.each_job(&processor) }
-                end
+                # Runs processor for each job (expects recurring #pop)         
+                self.input_queue { |q| q.pop(&processor) }
                 
                 ##
                 
-                worker.run
                 @pooling = true
                 
             end
@@ -215,22 +211,16 @@ module QRPC
             
             def input_queue(&block)
                 if @input_queue.nil?
-                    @input_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
-                    @input_queue.watch(self.input_name.to_s) do
-                        @input_queue.ignore("default") do
-
-                            # Results pooler error handler
-                            @input_queue.on_error do |error|
-                                raise ::Exception::new("Beanstalk error: " << error.to_s)
-                            end
-                            
-                            # Returns
-                            block.call(@input_queue)
-                            
-                        end
+                    @input_queue = @locator.input_queue
+                    queue = EM::Sequencer::new(@input_queue)
+                    
+                    queue.subscribe(self.input_name.to_s)
+                    queue.unsubscribe("default")
+                    queue.execute do
+                        yield @input_queue
                     end
                 else
-                    block.call(@input_queue)
+                    yield @input_queue
                 end
             end
             
@@ -241,7 +231,7 @@ module QRPC
             
             def output_name
                 if @output_name.nil?
-                    @output_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                    @output_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue_name + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
                 end
                 
                 return @output_name
@@ -254,12 +244,12 @@ module QRPC
             
             def output_queue(&block)
                 if @output_queue.nil?
-                    @output_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
+                    @output_queue = @locator.output_queue
                     @output_queue.use(self.output_name.to_s) do
-                        block.call(@output_queue)
+                        yield @output_queue
                     end
                 else
-                    block.call(@output_queue)
+                    yield @output_queue
                 end
             end
             
@@ -271,9 +261,9 @@ module QRPC
             def id
                 if @id.nil?
                     @id = UUID.generate(:compact).to_sym
+                else
+                    @id
                 end
-                
-                return @id
             end
                
         end

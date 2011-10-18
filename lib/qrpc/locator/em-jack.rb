@@ -25,7 +25,7 @@ module QRPC
         # @since 0.9.0
         # 
         
-        class EMJack
+        class EMJackLocator
 
             ##
             # Holds the queue interface.
@@ -122,34 +122,20 @@ module QRPC
             
             ##
             # Returns universal queue interface.
+            # @return [UnifiedQueues::Multi] queue
             #
             
-            ##
-            # Returns queue interface for input queue.
-            # @return [UnifiedQueues::Multi] input queue
-            #
-             
-            def input_queue
-                if @input_queue.nil?
-                    @input_queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
+            def queue
+                if @queue.nil?
+                    @queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
                 else
-                    @input_queue
+                    @queue
                 end
             end
             
-            ##
-            # Returns queue interface for output queue.
-            # @return [UnifiedQueues::Multi] output queue
-            #
-             
-            def output_queue
-                if @output_queue.nil?
-                    @output_queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
-                else
-                    @output_queue
-                end
-            end
-    
+            alias :input_queue :queue
+            alias :output_queue :queue
+                
         end
         
     end

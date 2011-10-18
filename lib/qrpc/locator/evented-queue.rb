@@ -23,7 +23,7 @@ module QRPC
         # @see https://github.com/martinkozak/evented-queue
         # 
         
-        class EventedQueue
+        class EventedQueueLocator
   
             ##
             # Contains queue instance.
@@ -50,32 +50,16 @@ module QRPC
                 UnifiedQueues::Multi::new UnifiedQueues::Single, ::EventedQueue::Recurring, UnifiedQueues::Single::new(CPriorityQueue)
             end
             
-            ##
-            # Returns queue interface for input queue.
-            # @return [EventedQueue::Recurring] input queue
-            #
-             
-            def input_queue
-                @queue
-            end
+            alias :input_queue :queue
+            alias :output_queue :queue
             
-            ##
-            # Returns queue interface for output queue.
-            # @return [UnifiedQueues::Multi] output queue
-            #
-             
-            def output_queue
-                @queue
-            end
-    
         end
-        
     end
-    
 end
 
+=begin
 q = QRPC::Locator::EventedQueue::new
-q.queue.use(:xyz)
+q.input_queue.use(:xyz)
 q.queue.push(:x, 2)
 q.queue.push(:y, 3)
 q.queue.subscribe(:xyz)
@@ -83,3 +67,4 @@ q.queue.pop do |i|
     p i
 end
 q.queue.push(:z, 1)
+=end

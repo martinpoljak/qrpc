@@ -5,10 +5,11 @@ source "http://rubygems.org"
    gem "PriorityQueue", ">= 0.1.2"
    gem "unified-queues", ">= 0.1.0"
    gem "evented-queue", ">= 0.1.0"
-   gem "em-jack", ">= 0.1.3"
-   gem "eventmachine", ">= 0"
-   gem "uuid", ">= 2.0.0"
    gem "hash-utils", ">= 0.18.0"
+   gem "eventmachine", ">= 0"
+   gem "em-batch", ">= 0.1.0"
+   gem "em-jack", ">= 0.1.3"
+   gem "uuid", ">= 2.0.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

@@ -4,7 +4,7 @@ require "rubygems"
 
 $:.push("./lib")
 require "qrpc/client"
-require "qrpc/locator"
+require "qrpc/locator/em-jack"
 require "eventmachine"
 
 #require "json-rpc-objects/serializer/bson"
@@ -15,7 +15,8 @@ require "eventmachine"
 require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
-    client = QRPC::Client::new(QRPC::Locator::new(:test), JsonRpcObjects::Serializer::MessagePack::new)
+    locator = QRPC::Locator::EMJackLocator::new(:test)
+    client = QRPC::Client::new(locator, JsonRpcObjects::Serializer::MessagePack::new)
 #    puts client.inspect
 
 #    client.something_bad do |i|
@@ -30,7 +31,7 @@ EM::run do
             count += 1
         end
         
-        if count < 100000
+        if count < 10000
             EM::next_tick do
                 make.call()
             end
