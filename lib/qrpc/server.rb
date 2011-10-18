@@ -5,7 +5,6 @@ require "qrpc/protocol/qrpc-object"
 require "qrpc/server/dispatcher"
 require "qrpc/server/job"
 require "qrpc/general"
-require "qrpc/locator"
 
 require "hash-utils/hash"   # >= 0.1.0
 require "eventmachine"
@@ -290,14 +289,17 @@ module QRPC
         def process_job(job)
             our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
-                call = Proc::new { self.output_queue.push(result, our_job.priority) }
+                call = Proc::new do
+                    self.output_queue.push(result, our_job.priority)
+                end
+                
                 output_name = self.output_name(our_job.client)
                 
                 if @output_used != output_name 
                     @output_used = output_name
                     self.output_queue.use(output_name.to_s, &call)
                 else
-                    call.call
+                    call.call()
                 end
             end
             

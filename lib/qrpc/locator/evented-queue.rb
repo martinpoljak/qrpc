@@ -24,7 +24,15 @@ module QRPC
         # 
         
         class EventedQueueLocator
-  
+            
+            ##
+            # Contains queue name.
+            # @return [String]
+            #
+    
+            attr_accessor :queue_name
+            @queue_name
+            
             ##
             # Contains queue instance.
             # @return [EventedQueue::Recurring]
@@ -38,8 +46,9 @@ module QRPC
             # @param [EventedQueue::Recurring] queue  recurring evented queue instance
             #
             
-            def initialize(queue = self.default_queue)
+            def initialize(queue_name, queue = self.default_queue)
                 @queue = queue
+                @queue_name = queue_name
             end
             
             ##
@@ -47,7 +56,11 @@ module QRPC
             #
             
             def default_queue 
-                UnifiedQueues::Multi::new UnifiedQueues::Single, ::EventedQueue::Recurring, UnifiedQueues::Single::new(CPriorityQueue)
+                UnifiedQueues::Multi::new UnifiedQueues::Single, ::EventedQueue::Recurring, UnifiedQueues::Single::new(CPriorityQueue) do |c|
+                    EM::next_tick do
+                        c.call()
+                    end
+                end
             end
             
             alias :input_queue :queue
