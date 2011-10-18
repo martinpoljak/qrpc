@@ -18,5 +18,6 @@ end
 
 
 require "qrpc/server"
+require "qrpc/locator/em-jack"
 server = QRPC::Server::new(Foo::new, :synchronous, JsonRpcObjects::Serializer::MessagePack::new)
-server.listen! QRPC::Locator::new("test"), :max_jobs => 0
+server.listen! QRPC::Locator::EMJackLocator::new("test")
