@@ -1,4 +1,6 @@
 # encoding: utf-8
+# (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
+
 require "uuid"
 require "qrpc/protocol/request"
 require "qrpc/client/exception"
