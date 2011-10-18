@@ -9,6 +9,7 @@ module QRPC
     
     ##
     # Resource locator.
+    # @deprecated (since 0.9.0) in favour to locators for each queue types
     #
     
     class Locator
