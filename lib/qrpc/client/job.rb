@@ -72,7 +72,14 @@ module QRPC
             #
             
             @serializer
+
+            ##
+            # ID generator.
+            # @since 0.9.0
+            #
             
+            @generator
+                        
             ##
             # Job result.
             #
@@ -86,17 +93,19 @@ module QRPC
             # @param [Symbol] method  job method name
             # @param [Array] arguments  array of arguments for job
             # @param [Integer] priority  job priority
+            # @param [QRPC::Generator] ID generator
             # @param [JsonRpcObjects::Serializer] serializer  data serializer
             # @param [Proc] callback  result callback
             #
             
-            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, serializer = QRPC::default_serializer, &callback)
+            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, generator = QRPC::default_generator, serializer = QRPC::default_serializer, &callback)
                 @client_id = client_id
                 @method = method
                 @arguments = arguments
                 @callback = callback
                 @priority = priority
                 @serializer = serializer
+                @generator = generator
             end
             
             ##
@@ -106,10 +115,10 @@ module QRPC
             
             def id
                 if @id.nil?
-                    @id = UUID.generate(:compact).to_sym
+                    @id = @generator.generate(self)
+                else
+                    @id
                 end
-                
-                return @id
             end
             
             ##

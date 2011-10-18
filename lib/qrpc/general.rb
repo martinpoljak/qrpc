@@ -2,6 +2,7 @@
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
 require "json-rpc-objects/serializer/json"  # >= 0.4.1
+require "qrpc/generator/uuid"
 
 ##
 # General QRPC module.
@@ -45,11 +46,25 @@ module QRPC
     DEFAULT_SERIALIZER = JsonRpcObjects::Serializer::JSON
     
     ##
+    # Holds default generator module link.
+    # @since 0.9.0
+    #
+    
+    DEFAULT_GENERATOR = QRPC::Generator::UUID
+    
+    ##
     # Holds default serializer instance.
     # @since 0.4.0
     #
     
     @@default_serializer = nil
+    
+    ##
+    # Holds default generator instance.
+    # @since 0.9.0
+    #
+    
+    @@default_generator = nil
     
     ##
     # Returns default serializer instance.
@@ -61,9 +76,24 @@ module QRPC
     def self.default_serializer
         if @@default_serializer.nil?
             @@default_serializer = QRPC::DEFAULT_SERIALIZER::new
+        else
+            @@default_serializer
         end
-        
-        return @@default_serializer
     end
     
+    ##
+    # Returns default generator instance.
+    #
+    # @return [QRPC::Generator::UUID] generator instance
+    # @since 0.9.0
+    #
+    
+    def self.default_generator
+        if @@default_generator.nil?
+            @@default_generator = QRPC::DEFAULT_GENERATOR::new
+        else
+            @@default_generator
+        end
+    end
+            
 end

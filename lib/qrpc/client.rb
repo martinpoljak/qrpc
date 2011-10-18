@@ -2,6 +2,7 @@
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
 require "qrpc/client/dispatcher"
+require "qrpc/generator/uuid"
 require "qrpc/general"
 
 ##
@@ -34,12 +35,13 @@ module QRPC
         ##
         # Constructor.
         #
-        # @param [QRPC::Locator] locator of the output queue
+        # @param [QRPC::Locator] locator of the queues
+        # @param [QRPC::Generator] ID generator
         # @param [JsonRpcObjects::Serializer] serializer data serializer
         #
         
-        def initialize(locator, serializer = QRPC::default_serializer)
-            @dispatcher = QRPC::Client::Dispatcher::new(locator, serializer)
+        def initialize(locator, generator = QRPC::default_generator, serializer = QRPC::default_serializer)
+            @dispatcher = QRPC::Client::Dispatcher::new(locator, generator, serializer)
         end
                 
         ##

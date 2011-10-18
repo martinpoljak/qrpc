@@ -24,6 +24,7 @@ module QRPC
         def self.new(*args, &block)
             EMJackLocator::new(*args, &block)
         end
+        
     end
         
 end

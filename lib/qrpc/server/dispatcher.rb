@@ -27,7 +27,6 @@ module QRPC
                 job.process!
             end
             
-            
         end
     end
 end

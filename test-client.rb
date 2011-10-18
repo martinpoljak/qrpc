@@ -7,17 +7,21 @@ require "qrpc/client"
 require "qrpc/locator/em-jack"
 require "eventmachine"
 
+#require "qrpc/generator/uuid"
+require "qrpc/generator/object-id"
+
 #require "json-rpc-objects/serializer/bson"
 #require "json-rpc-objects/serializer/psych"
-#require "json-rpc-objects/serializer/json"
+require "json-rpc-objects/serializer/json"
 #require "json-rpc-objects/serializer/yaml"
 #require "json-rpc-objects/serializer/marshal"
 require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
+    generator = QRPC::Generator::ObjectID::new
     locator = QRPC::Locator::EMJackLocator::new(:test)
     serializer = JsonRpcObjects::Serializer::MessagePack::new
-    client = QRPC::Client::new(locator, serializer)
+    client = QRPC::Client::new(locator, generator, serializer)
 #    puts client.inspect
 
 #    client.something_bad do |i|
@@ -32,7 +36,7 @@ EM::run do
             count += 1
         end
         
-        if count < 10000
+        if count < 100000
             EM::next_tick do
                 make.call()
             end

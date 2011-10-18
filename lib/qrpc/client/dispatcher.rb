@@ -1,11 +1,11 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "uuid"
 require "em-jack"
 require "em-batch"
 require "qrpc/general"
 require "qrpc/client/job"
+require "hash-utils/object"   # >= 1.1.0
 require "json-rpc-objects/response"
 
 ##
@@ -37,7 +37,13 @@ module QRPC
             #
             
             @locator
+
+            ##
+            # Holds generator of IDs.
+            #
             
+            @generator
+                        
             ##
             # Holds client session ID.
             #
@@ -85,12 +91,14 @@ module QRPC
             # Constructor.
             #
             # @param [QRPC::Locator] locator of the output queue
+            # @param [QRPC::Generator] ID generator
             # @param [JsonRpcObjects::Serializer] serializer data serializer
             #
             
-            def initialize(locator, serializer = QRPC::default_serializer)
+            def initialize(locator, generator = QRPC::default_generator, serializer = QRPC::default_serializer)
                 @serializer = serializer
                 @locator = locator
+                @generator = generator
                 @pooling = false
                 @jobs = { }
             
@@ -141,7 +149,7 @@ module QRPC
             #
             
             def create_job(name, args, priority = QRPC::DEFAULT_PRIORITY, &block)
-                Client::Job::new(self.id, name, args, priority, @serializer, &block)
+                Client::Job::new(self.id, name, args, priority, @generator, @serializer, &block)
             end
             
             ##
@@ -150,7 +158,10 @@ module QRPC
             
             def put(job)
                 if not job.notification?
-                    @jobs[job.id] = job
+                    id = job.id
+                    id = id.to_sym if not id.kind_of? Integer
+                    
+                    @jobs[id] = job
                 end
                 
                 self.output_queue do |queue|
@@ -171,15 +182,15 @@ module QRPC
                 # Results processing logic
                 processor = Proc::new do |job|
                     response = JsonRpcObjects::Response::parse(job, :wd, @serializer)
-                    
                     if not response.id.nil?
-                        id = response.id.to_sym
+                        id = response.id
+                        id = id.to_sym if not id.kind_of? Integer
+                        
                         if @jobs.include? id
                             @jobs[id].assign_result(response)
+                            @jobs.delete(id)
                         end
                     end
-                    
-                    @jobs.delete(id)
                 end
                 
                 # Runs processor for each job (expects recurring #pop)         
@@ -260,7 +271,7 @@ module QRPC
             
             def id
                 if @id.nil?
-                    @id = UUID.generate(:compact).to_sym
+                    @id = @generator.generate(self)
                 else
                     @id
                 end
