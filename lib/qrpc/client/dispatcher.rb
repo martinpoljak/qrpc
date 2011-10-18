@@ -182,7 +182,7 @@ module QRPC
                 
                 # Runs processor for each job            
                 parent = self
-                worker = EM.spawn do
+                worker = EM::spawn do
                     parent.input_queue { |q| q.each_job(&processor) }
                 end
                 
