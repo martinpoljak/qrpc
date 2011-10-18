@@ -183,7 +183,7 @@ module QRPC
                 end
                 
                 # Runs processor for each job (expects recurring #pop)         
-                self.input_queue { |q| q.pop(&processor) }
+                self.input_queue { |q| q.pop(true, &processor) }
                 
                 ##
                 

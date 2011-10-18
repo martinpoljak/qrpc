@@ -1,14 +1,16 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "qrpc/general"
-require "qrpc/server/job"
-require "qrpc/server/dispatcher"
-require "qrpc/locator"
 require "qrpc/protocol/qrpc-object"
+require "qrpc/server/dispatcher"
+require "qrpc/server/job"
+require "qrpc/general"
+require "qrpc/locator"
+
 require "hash-utils/hash"   # >= 0.1.0
-require "em-jack"
 require "eventmachine"
+require "em-batch"
+require "em-jack"
 require "base64"
 
 ##
@@ -154,9 +156,9 @@ module QRPC
         
         def finalize!
             if not @input_queue.nil?
-                @input_queue.watch("default") do
-                    @input_queue.ignore(@input_name.to_s) do
-                        @input_queue.close
+                @input_queue.subscribe("default") do
+                    @input_queue.unsubscribe(@input_name.to_s) do
+                        @input_queue.close!
                     end
                 end
             end
@@ -196,55 +198,49 @@ module QRPC
             @dispatcher = QRPC::Server::Dispatcher::new
 
             # Cache cleaning dispatcher
-            EM.add_periodic_timer(20) do
+            EM::add_periodic_timer(20) do
                 @output_name_cache.clear
             end
             
             # Process input queue
             self.input_queue do |queue|
-                worker = Proc::new do
-                    @dispatcher.available? do
-                        queue.reserve do |job|
-                            self.process_job(job)
-                            job.delete()
-                            worker.call()
-                        end
-                    end
+                queue.pop(true) do |job|
+                    self.process_job(job)
                 end
-                
-                worker.call()
             end
         end
-        
+    
         ##
         # Returns input queue.
         # @param [Proc] block block to which will be input queue given
         #
         
         def input_queue(&block)
-            if not @input_queue
-                @input_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
-                @input_queue.watch(self.input_name.to_s) do
-                    @input_queue.ignore("default") do
-                        block.call(@input_queue)
-                    end
+            if @input_queue.nil?
+                @input_queue = @locator.input_queue
+                queue = EM::Sequencer::new(@input_queue)
+                
+                queue.subscribe(self.input_name.to_s)
+                queue.unsubscribe("default")
+                queue.execute do
+                    yield @input_queue
                 end
             else
-                block.call(@input_queue)
+                yield @input_queue
             end
         end
-        
+    
         ##
         # Returns output queue.
-        # @return [EMJack::Connection] output queue Beanstalk connection
+        # @param [Proc] block block to which will be output queue given
         #
         
-        def output_queue
+        def output_queue(&block)
             if @output_queue.nil?
-                @output_queue = EMJack::Connection::new(:host => @locator.host, :port => @locator.port)
+                @output_queue = @locator.output_queue
+            else
+                @output_queue
             end
-            
-            return @output_queue
         end
         
         ##
@@ -277,7 +273,7 @@ module QRPC
         
         def input_name
             if @input_name.nil?
-                @input_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                @input_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue_name + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
             end
             
             return @input_name
@@ -294,7 +290,7 @@ module QRPC
         def process_job(job)
             our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
-                call = Proc::new { self.output_queue.put(result, :priority => our_job.priority) }
+                call = Proc::new { self.output_queue.push(result, our_job.priority) }
                 output_name = self.output_name(our_job.client)
                 
                 if @output_used != output_name 

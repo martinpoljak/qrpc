@@ -90,8 +90,6 @@ module QRPC
                     response = request.class::version.response::create(result, error, :id => request.id)
                     response.serializer = @serializer
                     response.qrpc = QRPC::Protocol::QrpcObject::create.output
-                    
-                    @job.delete()
                     self.set_deferred_status(:succeeded, response.serialize)
                 end
 
@@ -124,7 +122,7 @@ module QRPC
             
             def request
                 if @request.nil?
-                    @request = JsonRpcObjects::Request::parse(@job.body, :wd, @serializer)
+                    @request = JsonRpcObjects::Request::parse(@job, :wd, @serializer)
                 end
 
                 return @request

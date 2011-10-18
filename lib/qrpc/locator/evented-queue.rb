@@ -4,7 +4,7 @@
 require "hash-utils/array"
 require "unified-queues"
 require "evented-queue"
-require "priority_queue"
+require "priority_queue/c_priority_queue"
 
 ##
 # General QRPC module.

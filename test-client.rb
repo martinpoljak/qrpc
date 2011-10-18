@@ -16,7 +16,8 @@ require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
     locator = QRPC::Locator::EMJackLocator::new(:test)
-    client = QRPC::Client::new(locator, JsonRpcObjects::Serializer::MessagePack::new)
+    serializer = JsonRpcObjects::Serializer::MessagePack::new
+    client = QRPC::Client::new(locator, serializer)
 #    puts client.inspect
 
 #    client.something_bad do |i|
