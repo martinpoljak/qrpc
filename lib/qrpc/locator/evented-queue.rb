@@ -1,10 +1,11 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
+require "priority_queue/c_priority_queue"
 require "hash-utils/array"
 require "unified-queues"
 require "evented-queue"
-require "priority_queue/c_priority_queue"
+require "em-wrapper"
 
 ##
 # General QRPC module.
@@ -56,16 +57,32 @@ module QRPC
             #
             
             def default_queue 
-                UnifiedQueues::Multi::new UnifiedQueues::Single, ::EventedQueue::Recurring, UnifiedQueues::Single::new(CPriorityQueue) do |c|
+                UnifiedQueues::Multi::new UnifiedQueues::Single, ::EM::Wrapper::new(REUQ),  UnifiedQueues::Single, CPriorityQueue
+=begin
+                 do |c|
                     EM::next_tick do
                         c.call()
                     end
                 end
+=end
             end
             
             alias :input_queue :queue
             alias :output_queue :queue
+        
             
+            ##
+            # Helper recurring evented queue with unified queues support.
+            #
+        
+            class REUQ < ::EventedQueue::Recurring
+                def initialize(*args)
+                    cls = args.first
+                    args.shift
+                    object = cls::new(*args)
+                    super(object)
+                end
+            end    
         end
     end
 end

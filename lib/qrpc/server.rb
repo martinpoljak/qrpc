@@ -290,6 +290,7 @@ module QRPC
             our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
                 call = Proc::new do
+                    #p result
                     self.output_queue.push(result, our_job.priority)
                 end
                 
