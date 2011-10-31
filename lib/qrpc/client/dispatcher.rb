@@ -26,7 +26,7 @@ module QRPC
     class Client
     
         ##
-        # Queue RPC client dispatcher (worker).
+        # Queue RPC client dispaxtcher (worker).
         # @since 0.3.0
         #
         
@@ -163,7 +163,7 @@ module QRPC
                     
                     @jobs[id] = job
                 end
-                
+
                 self.output_queue do |queue|
                     queue.push(job.serialize)
                 end
@@ -193,8 +193,10 @@ module QRPC
                     end
                 end
                 
-                # Runs processor for each job (expects recurring #pop)         
-                self.input_queue { |q| q.pop(true, &processor) }
+                # Runs processor for each job (expects recurring #pop)   
+                self.input_queue do |queue|
+                    queue.pop(true, &processor)
+                end
                 
                 ##
                 
@@ -223,15 +225,15 @@ module QRPC
             def input_queue(&block)
                 if @input_queue.nil?
                     @input_queue = @locator.input_queue
-                    queue = EM::Sequencer::new(@input_queue)
-                    
-                    queue.subscribe(self.input_name.to_s)
-                    queue.unsubscribe("default")
-                    queue.execute do
-                        yield @input_queue
+                    @input_queue.unsubscribe("default") do
+                        @input_queue.subscribe(self.input_name.to_s) do
+                            yield @input_queue 
+                        end
                     end
                 else
-                    yield @input_queue
+                    @input_queue.subscribe(self.input_name.to_s) do
+                        yield @input_queue
+                    end
                 end
             end
             
@@ -243,9 +245,9 @@ module QRPC
             def output_name
                 if @output_name.nil?
                     @output_name = (QRPC::QUEUE_PREFIX + "-" + @locator.queue_name + "-" + QRPC::QUEUE_POSTFIX_INPUT).to_sym
+                else
+                    @output_name
                 end
-                
-                return @output_name
             end
             
             ##
@@ -260,7 +262,9 @@ module QRPC
                         yield @output_queue
                     end
                 else
-                    yield @output_queue
+                    @output_queue.use(self.output_name.to_s) do
+                        yield @output_queue
+                    end
                 end
             end
             

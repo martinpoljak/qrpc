@@ -58,13 +58,6 @@ module QRPC
             
             def default_queue 
                 UnifiedQueues::Multi::new UnifiedQueues::Single, ::EM::Wrapper::new(REUQ),  UnifiedQueues::Single, CPriorityQueue
-=begin
-                 do |c|
-                    EM::next_tick do
-                        c.call()
-                    end
-                end
-=end
             end
             
             alias :input_queue :queue
@@ -76,6 +69,11 @@ module QRPC
             #
         
             class REUQ < ::EventedQueue::Recurring
+              
+                ##
+                # Constructor.
+                #
+                
                 def initialize(*args)
                     cls = args.first
                     args.shift

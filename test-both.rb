@@ -52,12 +52,12 @@ EM::run do
 
     make = Proc::new do
         client.subtract(2, 3) do |i|
-            puts i
+            puts "x", i
             count += 1
         end
-        count += 1  
-        p queue.queue
-        if count < 2  
+        #count += 1  
+        #p queue.queue
+        if count < 7  
             EM::next_tick do
                 make.call()
             end

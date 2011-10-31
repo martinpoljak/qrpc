@@ -217,15 +217,15 @@ module QRPC
         def input_queue(&block)
             if @input_queue.nil?
                 @input_queue = @locator.input_queue
-                queue = EM::Sequencer::new(@input_queue)
-                
-                queue.subscribe(self.input_name.to_s)
-                queue.unsubscribe("default")
-                queue.execute do
-                    yield @input_queue
+                @input_queue.unsubscribe("default") do
+                    @input_queue.subscribe(self.input_name.to_s) do
+                        yield @input_queue 
+                    end
                 end
             else
-                yield @input_queue
+                @input_queue.subscribe(self.input_name.to_s) do
+                    yield @input_queue
+                end
             end
         end
     
@@ -289,18 +289,10 @@ module QRPC
         def process_job(job)
             our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
             our_job.callback do |result|
-                call = Proc::new do
-                    #p result
-                    self.output_queue.push(result, our_job.priority)
-                end
-                
                 output_name = self.output_name(our_job.client)
-                
-                if @output_used != output_name 
-                    @output_used = output_name
-                    self.output_queue.use(output_name.to_s, &call)
-                else
-                    call.call()
+                output_queue = self.output_queue
+                output_queue.use(output_name.to_s) do
+                    output_queue.push(result, our_job.priority)
                 end
             end
             
