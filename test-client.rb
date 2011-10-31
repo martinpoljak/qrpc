@@ -33,9 +33,11 @@ EM::run do
     make = Proc::new do
         client.subtract(2, 3) do |i|
             #puts i
-            count += 1
+            if i == -1
+                count += 1
+            end
         end
-        
+
         if count < 100000
             EM::next_tick do
                 make.call()

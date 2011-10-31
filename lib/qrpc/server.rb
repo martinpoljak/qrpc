@@ -200,7 +200,7 @@ module QRPC
             EM::add_periodic_timer(20) do
                 @output_name_cache.clear
             end
-            
+
             # Process input queue
             self.input_queue do |queue|
                 queue.pop(true) do |job|
@@ -216,9 +216,9 @@ module QRPC
         
         def input_queue(&block)
             if @input_queue.nil?
-                @input_queue = @locator.input_queue
-                @input_queue.unsubscribe("default") do
-                    @input_queue.subscribe(self.input_name.to_s) do
+                @input_queue = @locator.input_queue 
+                @input_queue.subscribe(self.input_name.to_s) do
+                    @input_queue.unsubscribe("default") do
                         yield @input_queue 
                     end
                 end
