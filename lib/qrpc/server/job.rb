@@ -123,9 +123,9 @@ module QRPC
             def request
                 if @request.nil?
                     @request = JsonRpcObjects::Request::parse(@job, :wd, @serializer)
+                else
+                    @request
                 end
-
-                return @request
             end
             
             ##

@@ -80,7 +80,7 @@ module QRPC
             
             @pooling
             
-            ##\
+            ##
             # Holds clients for finalizing.
             #
             
@@ -212,9 +212,9 @@ module QRPC
             def input_name
                 if @input_name.nil?
                     @input_name = (QRPC::QUEUE_PREFIX + "-" + self.id.to_s + "-" + QRPC::QUEUE_POSTFIX_OUTPUT).to_sym
+                else
+                    @input_name
                 end
-                
-                return @input_name
             end
             
             ##

@@ -21,7 +21,9 @@ module QRPC
       
         ##
         # Locator for 'evented-queue' queue type.
+        #
         # @see https://github.com/martinkozak/evented-queue
+        # @since 0.9.0
         # 
         
         class EventedQueueLocator
@@ -66,6 +68,7 @@ module QRPC
             
             ##
             # Helper recurring evented queue with unified queues support.
+            # @since 0.9.0
             #
         
             class REUQ < ::EventedQueue::Recurring
