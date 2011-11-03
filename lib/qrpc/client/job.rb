@@ -130,7 +130,7 @@ module QRPC
             #
             
             def to_json
-                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
+                QRPC::Protocol::JsonRpc::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
             end
 
             ##
@@ -141,6 +141,15 @@ module QRPC
             #
             
             def serialize
+                options = {
+                    :client_id => @client_id,
+                    :id => @id,
+                    :method => @method,
+                    :arguments => @arguments,
+                    :priority => @priority,
+                    :serializer => @serializer
+                }
+                
                 QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority, @serializer).serialize
             end
              

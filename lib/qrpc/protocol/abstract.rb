@@ -1,6 +1,7 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
+require "hash-utils/object"
 require "hash-utils/module"
 require "qrpc/general"
 require "hashie/mash"
@@ -35,6 +36,12 @@ module QRPC
             
             attr_accessor :options
             @options
+            
+            ##
+            # Holds classes to modules assignment cache.
+            # 
+            
+            @module_cache
                     
             ##
             # Constructor.
@@ -52,47 +59,53 @@ module QRPC
             
             ##
             # Returns new request object.
-            # @param [Hash] options  options for the new instance
+            # @return [Class]  class of the request object
             #
             
-            def request(options = { })
-                __module(:Request)::new(@options.merge(options))
+            def request
+                __module(:Request)
             end
             
             ##
             # Returns new response object.
-            # @param [Hash] options  options for the new instance
+            # @return [Class]  class of the response object
             #
             
-            def response(options = { })
-                __module(:Response)::new(@options.merge(options))
+            def response
+                __module(:Response)
             end
             
             ##
-            # Returns new exception object.
-            # @param [Hash] options  options for the new instance
+            # Returns new error object.
+            # @return [Class]  class of the error object
             #
             
-            def exception(options = { })
-                __module(:ExceptionData)::new(@options.merge(options))
+            def error
+                __module(:Error)
             end
-            
-            ##
-            # Returns new QRPC object.
-            # @param [Hash] options  options for the new instance
-            #
-            
-            def qrpc(options = { })
-                __module(:QrpcObject)::new(@options.merge(options))
-            end
-            
+                        
 
             private
             
             ##
             # Returns class from module according to specific driver
             def __module(name)
-                Module.get_module(self.class.name + "::" + name.to_s)
+                mod = Module.get_module(self.class.name + "::" + name.to_s)
+                
+                if not mod.in? @module_cache
+                    cls = Class::new(mod)
+                    opt = @options
+                    
+                    cls.class_eval do
+                        define_method :initialize do |options = { }, &block|
+                            super(opt.merge(options), &block)
+                        end
+                    end
+
+                    @module_cache[mod] = cls                    
+                else
+                    
+                @module_cache[mod]
             end
             
         end       

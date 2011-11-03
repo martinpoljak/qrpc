@@ -42,12 +42,6 @@ module QRPC
                 @options
                 
                 ##
-                # Holds the object initial options.
-                #
-                
-                @init
-                
-                ##
                 # Constructor.
                 #
                 # @param [Hash] init  initial options
@@ -55,7 +49,7 @@ module QRPC
                 #
                 
                 def initialize(init = { })
-                    @init = init
+                    @options = Hashie::Mash::new(init)
                     if self.instance_of? Object
                         not_implemented
                     end
@@ -67,19 +61,20 @@ module QRPC
                 # 
                 
                 def assign_options(options = { })
-                    @options = Hashie::Mash::new(@init.merge(options))
+                    @options = @options.merge(options)
                 end
                 
                 ##
                 # Serializes object to the resultant form.
                 #
-                # @return [String]  derialized form
+                # @return [String]  serialized form
                 # @abstract
                 #
                 
                 def serialize
                     not_implemented
                 end
+                
             end
         end
     end

@@ -26,13 +26,13 @@ module QRPC
         class Abstract
         
             ##
-            # Abstract exception data object implementation.
+            # Abstract error object implementation.
             #
             # @since 0.9.0
             # @abstract
             #
             
-            class ExceptionData < Object
+            class Error < Object
               
                 ##
                 # Constructor.
@@ -43,7 +43,7 @@ module QRPC
                 
                 def initialize(init = { })
                     super(init)
-                    if self.instance_of? QrpcObject
+                    if self.instance_of? Error
                         not_implemented
                     end
                 end
