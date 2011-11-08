@@ -33,14 +33,14 @@ EM::run do
         end
     end
 
-    server = QRPC::Server::new(Foo::new, :synchronous, JsonRpcObjects::Serializer::MessagePack::new)
+    server = QRPC::Server::new(Foo::new, :synchronous, JsonRpcObjects::Serializer::JSON::new)
     server.listen! queue
     
     ###############
     # Client
     ###############
     
-    serializer = JsonRpcObjects::Serializer::MessagePack::new
+    serializer = JsonRpcObjects::Serializer::JSON::new
     client = QRPC::Client::new(queue, generator, serializer)
 #    puts client.inspect
 
@@ -52,14 +52,12 @@ EM::run do
 
     make = Proc::new do
         client.subtract(2, 3) do |i|
-            #puts "x", i
-            if i == -1
-                count += 1
-            end
+            puts "x", i
+            count += 1
         end
         #count += 1  
         #p queue.queue
-        if count < 100000
+        if count < 7  
             EM::next_tick do
                 make.call()
             end
