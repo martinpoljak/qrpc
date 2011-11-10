@@ -102,6 +102,10 @@ module QRPC
                         define_method :initialize do |options = { }, &block|
                             super(opt.merge(options), &block)
                         end
+                        
+                        define_singleton_method :options do 
+                            opt
+                        end
                     end
 
                     @module_cache[mod] = cls                    

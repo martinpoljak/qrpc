@@ -59,11 +59,10 @@ module QRPC
                 
                 def native
                     if @native.nil?
-                        id = @options.id.to_s.to_sym
                         client_id = @options.client_id.to_s
                         qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create(:client => client_id, :priority => @options.priority)
                         
-                        @native = JsonRpcObjects::Request::create(@options[:method], @options.arguments, :id => id, :qrpc => qrpc.output)
+                        @native = JsonRpcObjects::Request::create(@options[:method], @options.arguments, :id => @options.id, :qrpc => qrpc.output)
                         @native.serializer = @options.serializer
                     end
                     

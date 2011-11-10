@@ -60,6 +60,33 @@ module QRPC
                     not_implemented
                 end
 
+                ##
+                # Returns ID of the request.
+                # @return [Object] request ID
+                #
+                
+                def id
+                    not_implemented
+                end
+                
+                ##
+                # Indicates, error state of the response.
+                # @return [Boolean] error indication
+                #
+                
+                def error?
+                    not_implemented
+                end
+                   
+                ##
+                # Returns response result.
+                # @return [Object] response result
+                #
+                
+                def result
+                    not_implemented
+                end
+                
             end
         end
     end
