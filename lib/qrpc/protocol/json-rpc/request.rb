@@ -3,6 +3,7 @@
 
 require "qrpc/general"
 require "qrpc/protocol/abstract/request"
+require "qrpc/protocol/json-rpc/native/qrpc-object"
 
 ##
 # General QRPC module.
@@ -33,10 +34,8 @@ module QRPC
               
                 ##
                 # Holds native object.
-                # @return [JsonRpcObjects::Request]  native request
                 #
                 
-                attr_accessor :native
                 @native 
 
                 ##
@@ -50,6 +49,25 @@ module QRPC
                     object = self::new 
                     object.native = JsonRpcObjects::Request::parse(raw, :wd, @options.serializer)
                     return object
+                end
+                
+
+                ##
+                # Returns the native object.
+                # @return [JsonRpcObjects::Response]  native response object
+                #
+                
+                def native
+                    if @native.nil?
+                        id = @options.id.to_s.to_sym
+                        client_id = @options.client_id.to_s
+                        qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create(:client => client_id, :priority => @options.priority)
+                        
+                        @native = JsonRpcObjects::Request::create(@options[:method], @options.arguments, :id => id, :qrpc => qrpc.output)
+                        @native.serializer = @options.serializer
+                    end
+                    
+                    @native
                 end
                 
                 ##

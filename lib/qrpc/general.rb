@@ -1,7 +1,6 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "json-rpc-objects/serializer/json"  # >= 0.4.1
 require "qrpc/generator/uuid"
 
 ##
@@ -39,13 +38,6 @@ module QRPC
     DEFAULT_PRIORITY = 50
     
     ##
-    # Holds default serializer module link.
-    # @since 0.4.0
-    #
-    
-    DEFAULT_SERIALIZER = JsonRpcObjects::Serializer::JSON
-    
-    ##
     # Holds default generator module link.
     # @since 0.9.0
     #
@@ -53,11 +45,11 @@ module QRPC
     DEFAULT_GENERATOR = QRPC::Generator::UUID
     
     ##
-    # Holds default serializer instance.
+    # Holds default protocol instance.
     # @since 0.4.0
     #
     
-    @@default_serializer = nil
+    @@default_protocol = nil
     
     ##
     # Holds default generator instance.
@@ -67,17 +59,23 @@ module QRPC
     @@default_generator = nil
     
     ##
-    # Returns default serializer instance.
+    # Returns default protocol instance.
     #
-    # @return [JsonRpcObjects::Serializer] serializer instance
-    # @since 0.4.0
+    # @return [QRPC::Protocol::Abstract] protocol instance
+    # @since 0.9.0
     #
     
-    def self.default_serializer
-        if @@default_serializer.nil?
-            @@default_serializer = QRPC::DEFAULT_SERIALIZER::new
+    def self.default_protocol
+        if @@default_protocol.nil?
+            begin
+                @@default_protocol = QRPC::Protocol::JsonRpc::new(:serializer => JsonRpcObjects::Serializer::JSON::new)
+            rescue NameError
+                require "json-rpc-objects/serializer/json"  # >= 0.4.1
+                require "qrpc/protocol/json-rpc"
+                retry
+            end
         else
-            @@default_serializer
+            @@default_protocol
         end
     end
     

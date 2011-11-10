@@ -31,6 +31,12 @@ module QRPC
         #
         
         class Dispatcher
+          
+            ##
+            # Holds current protocol object.
+            #
+            
+            @protocol
 
             ##
             # Holds locator of the target queue.
@@ -86,22 +92,21 @@ module QRPC
             
             @@clients = { }
             
-            
             ##
             # Constructor.
             #
             # @param [QRPC::Locator] locator of the output queue
             # @param [QRPC::Generator] ID generator
-            # @param [JsonRpcObjects::Serializer] serializer data serializer
+            # @param [QRPC::Protocol::Abstract] protocol protocol of the session
             #
             
-            def initialize(locator, generator = QRPC::default_generator, serializer = QRPC::default_serializer)
-                @serializer = serializer
+            def initialize(locator, generator = QRPC::default_generator, protocol = QRPC::default_protocol)
+                @protocol = protocol
                 @locator = locator
                 @generator = generator
                 @pooling = false
                 @jobs = { }
-            
+
                 # Destructor
                 ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
                 @@clients[self.object_id] = self
@@ -149,7 +154,7 @@ module QRPC
             #
             
             def create_job(name, args, priority = QRPC::DEFAULT_PRIORITY, &block)
-                Client::Job::new(self.id, name, args, priority, @generator, @serializer, &block)
+                Client::Job::new(self.id, name, args, priority, @generator, @protocol, &block)
             end
             
             ##
@@ -181,8 +186,7 @@ module QRPC
                 
                 # Results processing logic
                 processor = Proc::new do |job|
-                    response = JsonRpcObjects::Response::parse(job, :wd, @serializer)
-                    #response = QRPC::Protocol::JsonRpc::response::parse(job)
+                    response = @protocol.response::parse(job)
                     if not response.id.nil?
                         id = response.id
                         id = id.to_sym if not id.kind_of? Integer

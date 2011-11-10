@@ -37,11 +37,11 @@ module QRPC
         #
         # @param [QRPC::Locator] locator of the queues
         # @param [QRPC::Generator] ID generator
-        # @param [JsonRpcObjects::Serializer] serializer data serializer
+        # @param [QRPC::Protocol::Abstract] protocol protocol of the session
         #
         
-        def initialize(locator, generator = QRPC::default_generator, serializer = QRPC::default_serializer)
-            @dispatcher = QRPC::Client::Dispatcher::new(locator, generator, serializer)
+        def initialize(locator, generator = QRPC::default_generator, protocol = QRPC::default_protocol)
+            @dispatcher = QRPC::Client::Dispatcher::new(locator, generator, protocol)
         end
                 
         ##

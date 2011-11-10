@@ -67,11 +67,11 @@ module QRPC
             @priority
             
             ##
-            # Data serializer.
-            # @since 0.4.0
+            # Protocol.
+            # @since 0.9.0
             #
             
-            @serializer
+            @protocol
 
             ##
             # ID generator.
@@ -94,17 +94,17 @@ module QRPC
             # @param [Array] arguments  array of arguments for job
             # @param [Integer] priority  job priority
             # @param [QRPC::Generator] ID generator
-            # @param [JsonRpcObjects::Serializer] serializer  data serializer
+            # @param [QRPC::Protocol::Abstract] protocol  protocol instance
             # @param [Proc] callback  result callback
             #
             
-            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, generator = QRPC::default_generator, serializer = QRPC::default_serializer, &callback)
+            def initialize(client_id, method, arguments = [ ], priority = QRPC::DEFAULT_PRIORITY, generator = QRPC::default_generator, protocol = QRPC::default_protocol, &callback)
                 @client_id = client_id
                 @method = method
                 @arguments = arguments
                 @callback = callback
                 @priority = priority
-                @serializer = serializer
+                @protocol = protocol
                 @generator = generator
             end
             
@@ -125,12 +125,12 @@ module QRPC
             # Converts job to JSON.
             #
             # @return [String] job in JSON form (JSON-RPC)
-            # @deprecated Sice 0.4.0. Use +#serialize+.
+            # @deprecated (since 0.4.0) Use +#serialize+.
             # @see #serialize
             #
             
             def to_json
-                QRPC::Protocol::JsonRpc::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
+                JsonRpc::Request::create(@client_id, @id, @method, @arguments, @priority).to_json
             end
 
             ##
@@ -146,11 +146,10 @@ module QRPC
                     :id => @id,
                     :method => @method,
                     :arguments => @arguments,
-                    :priority => @priority,
-                    :serializer => @serializer
+                    :priority => @priority
                 }
                 
-                QRPC::Protocol::Request::create(@client_id, @id, @method, @arguments, @priority, @serializer).serialize
+                @protocol.request::new(options).serialize
             end
              
             ##

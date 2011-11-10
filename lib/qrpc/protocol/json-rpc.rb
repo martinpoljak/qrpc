@@ -26,3 +26,7 @@ module QRPC
                
     end
 end
+
+require "qrpc/protocol/json-rpc/error"
+require "qrpc/protocol/json-rpc/request"
+require "qrpc/protocol/json-rpc/response"

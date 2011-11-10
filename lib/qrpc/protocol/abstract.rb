@@ -52,6 +52,8 @@ module QRPC
             
             def initialize(options = { })
                 @options = Hashie::Mash::new(options)
+                @module_cache = { }
+                
                 if self.instance_of? Abstract
                     not_implemented
                 end
@@ -103,7 +105,7 @@ module QRPC
                     end
 
                     @module_cache[mod] = cls                    
-                else
+                end
                     
                 @module_cache[mod]
             end

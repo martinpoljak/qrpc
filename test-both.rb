@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+$:.unshift("./lib")
 $:.push("./lib")
 
 require "rubygems"
@@ -19,7 +20,6 @@ require "json-rpc-objects/serializer/json"
 require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
-
     generator = QRPC::Generator::ObjectID::new
     queue = QRPC::Locator::EventedQueueLocator::new("test")
 
@@ -41,7 +41,7 @@ EM::run do
     ###############
     
     serializer = JsonRpcObjects::Serializer::JSON::new
-    client = QRPC::Client::new(queue, generator, serializer)
+    client = QRPC::Client::new(queue, generator)
 #    puts client.inspect
 
 #    client.something_bad do |i|
