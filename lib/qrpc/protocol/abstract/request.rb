@@ -60,6 +60,14 @@ module QRPC
                     not_implemented
                 end
                 
+                ##
+                # Returns ID of the request.
+                # @return [Object] request ID
+                #
+                
+                def id
+                    not_implemented
+                end
             end
         end
     end

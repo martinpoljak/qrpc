@@ -100,11 +100,11 @@ module QRPC
         @output_used
         
         ##
-        # Holds data serializer.
-        # @since 0.4.0
+        # Holds protocol instance.
+        # @since 0.9.0
         #
         
-        @serializer
+        @protocol
         
         ##
         # Indicates API methods synchronicity.
@@ -124,12 +124,12 @@ module QRPC
         #
         # @param [Object] api some object which will be used as RPC API
         # @param [Symbol] synchronicity  API methods synchronicity
-        # @param [JsonRpcObjects::Serializer] serializer  data serializer
+        # @param [QRPC::Protocol::Abstract] protocol  a protocol handling instance
         #
         
-        def initialize(api, synchronicity = :synchronous, serializer = QRPC::default_serializer)
+        def initialize(api, synchronicity = :synchronous, protocol = QRPC::default_protocol)
             @api = api
-            @serializer = serializer
+            @protocol = protocol
             @synchronicity = synchronicity
             @output_name_cache = { }
             
@@ -287,7 +287,7 @@ module QRPC
         #
         
         def process_job(job)
-            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @serializer)
+            our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @protocol)
             our_job.callback do |result|
                 output_name = self.output_name(our_job.client)
                 output_queue = self.output_queue

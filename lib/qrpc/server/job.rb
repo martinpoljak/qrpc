@@ -55,11 +55,11 @@ module QRPC
             @synchronicity
             
             ##
-            # Holds data serializer.
-            # @since 0.4.0
+            # Holds protocol handling instance.
+            # @since 0.9.0
             #
             
-            @serializer
+            @protocol
             
             ##
             # Constructor.
@@ -67,14 +67,14 @@ module QRPC
             # @param [Object] object which will serve as API
             # @param [Symbol] synchronicity  API methods synchronicity
             # @param [EM::Beanstalk::Job] job beanstalk job
-            # @param [JsonRpcObjects::Serializer] serializer data serializer
+            # @param [QRPC::Protocol::Abstract] protocol protocol handling instance
             #
             
-            def initialize(api, synchronicity, job, serializer = QRPC::default_serializer)
-                @api = api
+            def initialize(api, synchronicity, job, protocol = QRPC::default_protocol)
                 @synchronicity = synchronicity
+                @protocol = protocol
                 @job = job
-                @serializer = serializer
+                @api = api
             end
             
             ##
@@ -87,31 +87,35 @@ module QRPC
                 request = self.request
                 
                 finalize = Proc::new do
-                    response = request.class::version.response::create(result, error, :id => request.id)
-                    response.serializer = @serializer
-                    response.qrpc = QRPC::Protocol::QrpcObject::create.output
+                    options = {
+                        :result => result,
+                        :error => error,
+                        :request => request
+                    }
+                    
+                    response = @protocol.response::new(options)
                     self.set_deferred_status(:succeeded, response.serialize)
                 end
 
                 
                 if @synchronicity == :synchronous
-                    begin
+                    #begin
                         result = @api.send(request.method, *request.params)
-                    rescue ::Exception => e
+                    #rescue ::Exception => e
                         error = self.generate_error(request, e)
-                    end
+                    #end
 
                     finalize.call()
                 else                
-                    begin
+                    #begin
                         @api.send(request.method, *request.params) do |res|
                             result = res
                             finalize.call()
                         end
-                    rescue ::Exception => e
+                    #rescue ::Exception => e
                         error = self.generate_error(request, e)
                         finalize.call()
-                    end                    
+                    #end                    
                 end
             end
 
@@ -122,7 +126,7 @@ module QRPC
             
             def request
                 if @request.nil?
-                    @request = JsonRpcObjects::Request::parse(@job, :wd, @serializer)
+                    @request = @protocol.request::parse(@job)
                 else
                     @request
                 end
@@ -165,8 +169,12 @@ module QRPC
             #
             
             def generate_error(request, exception)
-                data = QRPC::Protocol::ExceptionData::create(exception)
-                request.class::version.error::create(100, "exception raised during processing the request", :error => data.output)
+                options = {
+                    :exception => exception,
+                    :request => request
+                }
+                
+                @protocol.error::new(options)
             end
               
         end

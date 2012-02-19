@@ -36,6 +36,7 @@ module QRPC
                 # Holds native object.
                 #
                 
+                attr_writer :native
                 @native 
 
                 ##
@@ -47,7 +48,7 @@ module QRPC
                                 
                 def self.parse(raw)
                     object = self::new 
-                    object.native = JsonRpcObjects::Request::parse(raw, :wd, @options.serializer)
+                    object.native = JsonRpcObjects::Request::parse(raw, :wd, self::options.serializer)
                     return object
                 end
                 
@@ -76,6 +77,15 @@ module QRPC
                 
                 def serialize
                     self.native.serialize
+                end
+                
+                ##
+                # Returns ID of the request.
+                # @return [Object] request ID
+                #
+                
+                def id
+                    self.native.id
                 end
                 
             end

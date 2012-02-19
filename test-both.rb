@@ -33,14 +33,13 @@ EM::run do
         end
     end
 
-    server = QRPC::Server::new(Foo::new, :synchronous, JsonRpcObjects::Serializer::JSON::new)
+    server = QRPC::Server::new(Foo::new, :synchronous)
     server.listen! queue
     
     ###############
     # Client
     ###############
     
-    serializer = JsonRpcObjects::Serializer::JSON::new
     client = QRPC::Client::new(queue, generator)
 #    puts client.inspect
 

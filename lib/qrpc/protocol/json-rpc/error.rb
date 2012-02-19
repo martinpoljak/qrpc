@@ -48,8 +48,8 @@ module QRPC
                         exception = @options.exception
                         request = @options.request
                         data = QRPC::Protocol::JsonRpc::Native::ExceptionData::create(exception)
-
-                        @native = request.class::version.error::create(100, "exception raised during processing the request", :error => data.output)
+                        
+                        @native = request.native.class::version.error::create(100, "exception raised during processing the request", :error => data.output)
                     end
                     
                     @native
