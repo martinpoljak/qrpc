@@ -74,6 +74,7 @@ Both `backtrace` and `dump` members are optional.
 Usage is simple. Look example:
 
     require "qrpc/server"
+    require "qrpc/locator"
     
     class Foo
         def subtract(x, y)
@@ -96,6 +97,10 @@ similar to fibers. Default number at one time processed jobs is 20,
 but it can be changed by setting `:max_jobs => <number>` to `#listen!` 
 or `#start_listening`.
 
+The `#precall` and `#postcall` handlers are supported on the API class
+called if API responds to them. Currently, they don't receive any
+parameters and are intended for simple call initialization only.
+
 Reponse will be put to the same queue server, to queue named 
 `qrpc-<client identifier>-output`, with structure described above. 
 
@@ -105,6 +110,7 @@ Client usage is simple too. Look example:
 
     require "eventmachine"
     require "qrpc/client"
+    require "qrpc/locator"
     
     EM::run do
         client = QRPC::Client::new QRPC::Locator::new "test"
