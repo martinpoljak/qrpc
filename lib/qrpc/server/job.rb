@@ -69,7 +69,9 @@ module QRPC
                 request = self.request
                 
                 begin
+                    @api.precall if @api.respond_to? :precall
                     result = @api.send(request.method, *request.params)
+                    @api.postcall if @api.respond_to? :postcall
                 rescue ::Exception => e
                     error = self.generate_error(request, e)
                 end
