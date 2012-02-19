@@ -4,8 +4,17 @@ require "rubygems"
 $:.push("./lib")
 
 class Foo
+    def precall
+        puts "precall"
+    end
+    
     def subtract(x, y)
+        puts "call"
         x - y
+    end
+    
+    def postcall
+        puts "postcall"
     end
 end
 
