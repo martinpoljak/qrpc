@@ -1,4 +1,10 @@
 
+0.4.0
+* #precall and #postcall handler support on API object
+* missing default value for options in Server#start_listening
+* in some responses ID isn't available, but tried to be converted to 
+  the symbol
+
 0.3.2 (2011-08-28)
 * UUID of the client now generated in compact format
 * compatiblity corrections with OkJson
@@ -7,8 +13,7 @@
 * UUID of the jobs now generated in compact format
 
 0.3.0 (2011-02-27)
-* bad json-rpc-object dependency (but noncritical, some special cases
-    performance lag only)
+* invalid json-rpc-object dependency
 * all public methods from Client moved to Client::Dispatcher
 
 0.2.2 (2011-02-13)
