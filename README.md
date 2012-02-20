@@ -142,7 +142,7 @@ Contributing
 Copyright
 ---------
 
-Copyright &copy; 2011 [Martin Kozák][7]. See `LICENSE.txt` for
+Copyright &copy; 2011-2012 [Martin Kozák][7]. See `LICENSE.txt` for
 further details.
 
 [1]: http://rubyeventmachine.com/
