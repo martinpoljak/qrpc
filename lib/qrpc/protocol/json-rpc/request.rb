@@ -88,6 +88,42 @@ module QRPC
                     self.native.id
                 end
                 
+                ##
+                # Returns method identifier of the request.
+                # @return Symbol
+                #
+                
+                def method
+                    @native.method
+                end
+
+                ##
+                # Returns method params of the request.
+                # @return Array
+                #
+                
+                def params
+                    @native.params
+                end
+
+                ##
+                # Returns the QRPC request priority.
+                # @return Integer
+                #
+                 
+                def priority
+                    @native.qrpc["priority"]
+                end
+
+                ##
+                # Returns the QRPC request client identifier.
+                # @return Object
+                #
+                 
+                def client
+                    @native.qrpc["client"]
+                end
+                
             end
         end
     end

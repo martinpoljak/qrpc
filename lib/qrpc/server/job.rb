@@ -99,23 +99,23 @@ module QRPC
 
                 
                 if @synchronicity == :synchronous
-                    #begin
+                    begin
                         result = @api.send(request.method, *request.params)
-                    #rescue ::Exception => e
+                    rescue ::Exception => e
                         error = self.generate_error(request, e)
-                    #end
+                    end
 
                     finalize.call()
                 else                
-                    #begin
+                    begin
                         @api.send(request.method, *request.params) do |res|
                             result = res
                             finalize.call()
                         end
-                    #rescue ::Exception => e
+                    rescue ::Exception => e
                         error = self.generate_error(request, e)
                         finalize.call()
-                    #end                    
+                    end                    
                 end
             end
 
@@ -142,7 +142,7 @@ module QRPC
             #
             
             def priority
-                priority = self.request.qrpc["priority"]
+                priority = self.request.priority
                 if priority.nil?
                     priority = QRPC::DEFAULT_PRIORITY
                 else
@@ -158,7 +158,7 @@ module QRPC
             #
             
             def client
-                self.request.qrpc["client"]
+                self.request.client
             end
             
             

@@ -62,12 +62,55 @@ module QRPC
                 
                 ##
                 # Returns ID of the request.
+                #
                 # @return [Object] request ID
+                # @abstract
                 #
                 
                 def id
                     not_implemented
                 end
+                
+                ##
+                # Returns method identifier of the request.
+                #
+                # @return Symbol
+                # @abstract
+                #
+                
+                def method
+                    not_implemented
+                end
+
+                ##
+                # Returns method params of the request.
+                #
+                # @return Array
+                # @abstract
+                #
+                
+                def params
+                    not_implemented
+                end
+
+                ##
+                # Returns the QRPC request priority.
+                # @return Integer
+                #
+                 
+                def priority
+                    not_implemented
+                end
+
+                ##
+                # Returns the QRPC request client identifier.
+                # @return Object
+                #
+                 
+                def client
+                    not_implemented
+                end
+                
             end
         end
     end
