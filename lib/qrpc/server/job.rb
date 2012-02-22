@@ -104,7 +104,7 @@ module QRPC
                     rescue ::Exception => e
                         error = self.generate_error(request, e)
                     end
-
+                    
                     finalize.call()
                 else                
                     begin

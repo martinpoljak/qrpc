@@ -28,12 +28,19 @@ module QRPC
         class EMJackLocator
 
             ##
-            # Holds the queue interface.
+            # Holds the input queue interface.
             # @return [UnifiedQueues::Multi] input queue
             #
             
-            @queue
+            @input_queue
+
+            ##
+            # Holds the input queue interface.
+            # @return [UnifiedQueues::Multi] output queue
+            #
             
+            @output_queue
+                        
             ##
             # Contains queue name.
             # @return [String]
@@ -117,24 +124,34 @@ module QRPC
             #
             
             def to_s
-                @queue_name.dup << "@" << @host << ":" << @port.to_s
+                @queue_name + "@" + @host + ":" + @port.to_s
             end
             
             ##
-            # Returns universal queue interface.
+            # Returns universal queue interface for input queue.
             # @return [UnifiedQueues::Multi] queue
             #
             
-            def queue
-                if @queue.nil?
-                    @queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
+            def input_queue
+                if @input_queue.nil?
+                    @input_queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
                 else
-                    @queue
+                    @input_queue
                 end
             end
-            
-            alias :input_queue :queue
-            alias :output_queue :queue
+
+            ##
+            # Returns universal queue interface for output queue.
+            # @return [UnifiedQueues::Multi] queue
+            #
+                        
+            def output_queue
+                if @output_queue.nil?
+                    @output_queue = UnifiedQueues::Multi::new EMJack::Connection, :host => @host, :port => @port
+                else
+                    @output_queue
+                end
+            end
                 
         end
         

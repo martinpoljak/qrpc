@@ -168,13 +168,13 @@ module QRPC
                     
                     @jobs[id] = job
                 end
-
-                self.output_queue do |queue|
-                    queue.push(job.serialize)
-                end
                 
                 if (not @pooling) and (@jobs.length > 0)
                     self.pool!
+                end
+                
+                self.output_queue do |queue|
+                    queue.push(job.serialize)
                 end
             end
          
