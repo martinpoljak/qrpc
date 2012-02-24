@@ -288,11 +288,14 @@ module QRPC
         
         def process_job(job)
             our_job = QRPC::Server::Job::new(@api, @synchronicity, job, @protocol)
-            our_job.callback do |result|
-                output_name = self.output_name(our_job.client)
-                output_queue = self.output_queue
-                output_queue.use(output_name.to_s) do
-                    output_queue.push(result, our_job.priority)
+            
+            if not our_job.request.notification?
+                our_job.callback do |result|
+                    output_name = self.output_name(our_job.client)
+                    output_queue = self.output_queue
+                    output_queue.use(output_name.to_s) do
+                        output_queue.push(result, our_job.priority)
+                    end
                 end
             end
             

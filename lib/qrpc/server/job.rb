@@ -86,15 +86,17 @@ module QRPC
                 error = nil
                 request = self.request
                 
-                finalize = Proc::new do
-                    options = {
-                        :result => result,
-                        :error => error,
-                        :request => request
-                    }
-                    
-                    response = @protocol.response::new(options)
-                    self.set_deferred_status(:succeeded, response.serialize)
+                if not request.notification?
+                    finalize = Proc::new do
+                        options = {
+                            :result => result,
+                            :error => error,
+                            :request => request
+                        }
+                        
+                        response = @protocol.response::new(options)
+                        self.set_deferred_status(:succeeded, response.serialize)
+                    end
                 end
 
                 
@@ -105,16 +107,22 @@ module QRPC
                         error = self.generate_error(request, e)
                     end
                     
-                    finalize.call()
+                    if not request.notification?
+                        finalize.call()
+                    end
                 else                
                     begin
                         @api.send(request.method, *request.params) do |res|
                             result = res
-                            finalize.call()
+                            if not request.notification?
+                                finalize.call()
+                            end
                         end
                     rescue ::Exception => e
                         error = self.generate_error(request, e)
-                        finalize.call()
+                        if not request.notification?
+                            finalize.call()
+                        end
                     end                    
                 end
             end

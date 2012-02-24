@@ -111,6 +111,15 @@ module QRPC
                     not_implemented
                 end
                 
+                ##
+                # Indicates, job is notification.
+                # @return Boolean
+                #
+                
+                def notification?
+                    not_implemented
+                end
+                
             end
         end
     end

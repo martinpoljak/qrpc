@@ -5,6 +5,7 @@ require "json-rpc-objects/generic/object"
 require "json-rpc-objects/request"
 require "qrpc/protocol/json-rpc"
 require "qrpc/general"
+require "hash-utils"
 
 ##
 # General QRPC module.
@@ -70,6 +71,10 @@ module QRPC
                         if (not @priority.nil?) and not (@priority.kind_of? Numeric)
                             raise Exception::new("Priority is expected to be Numeric.")
                         end
+                        
+                        if not (@notification.boolean?)
+                            raise Exception::new("Notification is expected to be Boolean.")
+                        end
                     end
                                 
                     ##
@@ -78,7 +83,9 @@ module QRPC
                     #
         
                     def output
-                        result = { "version" => "1.0.1" }
+                        result = { 
+                            "version" => "1.0.2"
+                        }
                         
                         if not @priority.nil?
                             result["priority"] = @priority
@@ -86,6 +93,10 @@ module QRPC
                         
                         if not @client.nil?
                             result["client"] = @client.to_s
+                        end
+                        
+                        if @notification.true?
+                            result["notification"] = @notification
                         end
                         
                         return result
@@ -103,6 +114,7 @@ module QRPC
                         
                         @priority = data[:priority]
                         @client = data[:client]
+                        @notification = data[:notification]
                     end
         
                     ##
@@ -112,6 +124,10 @@ module QRPC
                     def normalize!
                         if not @priority.nil?
                             @priority = @priority.to_i
+                        end
+                        
+                        if @notification.nil?
+                            @notification = false
                         end
                     end
                 end

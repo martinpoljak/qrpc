@@ -61,7 +61,7 @@ module QRPC
                 def native
                     if @native.nil?
                         client_id = @options.client_id.to_s
-                        qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create(:client => client_id, :priority => @options.priority)
+                        qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create(:client => client_id, :priority => @options.priority, :notification => @options.notification)
                         qrpc.serializer = @options.serializer
                         
                         @native = JsonRpcObjects::Request::create(@options[:method], @options.arguments, :id => @options.id, :qrpc => qrpc.output)
@@ -123,6 +123,15 @@ module QRPC
                  
                 def client
                     @native.qrpc["client"]
+                end
+                
+                ##
+                # Indicates, job is notification.
+                # @return Boolean
+                #
+                
+                def notification?
+                    @native.qrpc["notification"]
                 end
                 
             end

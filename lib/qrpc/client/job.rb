@@ -146,7 +146,8 @@ module QRPC
                     :id => @id,
                     :method => @method,
                     :arguments => @arguments,
-                    :priority => @priority
+                    :priority => @priority,
+                    :notification => self.notification?
                 }
                 
                 @protocol.request::new(options).serialize
