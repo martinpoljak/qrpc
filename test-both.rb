@@ -33,6 +33,7 @@ EM::run do
     class Foo
         def subtract(x, y)
             x - y
+            throw Exception::new
         end
     end
 
@@ -57,8 +58,10 @@ EM::run do
             puts "x", i
             count += 1
         end
+
         #count += 1  
         #p queue.queue
+
         if count < 7  
             EM::next_tick do
                 make.call()

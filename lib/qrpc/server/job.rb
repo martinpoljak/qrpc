@@ -104,7 +104,9 @@ module QRPC
                     begin
                         result = @api.send(request.method, *request.params)
                     rescue ::Exception => e
-                        error = self.generate_error(request, e)
+                        if not request.notification?
+                            error = self.generate_error(request, e)
+                        end
                     end
                     
                     if not request.notification?
@@ -113,14 +115,14 @@ module QRPC
                 else                
                     begin
                         @api.send(request.method, *request.params) do |res|
-                            result = res
                             if not request.notification?
+                                result = res
                                 finalize.call()
                             end
                         end
                     rescue ::Exception => e
-                        error = self.generate_error(request, e)
                         if not request.notification?
+                            error = self.generate_error(request, e)
                             finalize.call()
                         end
                     end                    

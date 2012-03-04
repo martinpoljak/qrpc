@@ -187,6 +187,7 @@ module QRPC
                 # Results processing logic
                 processor = Proc::new do |job|
                     response = @protocol.response::parse(job)
+                    
                     if not response.id.nil?
                         id = response.id
                         id = id.to_sym if not id.kind_of? Integer
