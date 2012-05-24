@@ -32,8 +32,8 @@ EM::run do
     
     class Foo
         def subtract(x, y)
+            puts "response"
             x - y
-            throw Exception::new
         end
     end
 
@@ -54,6 +54,8 @@ EM::run do
     count = 0
 
     make = Proc::new do
+        puts "request"
+        
         client.subtract(2, 3) do |i|
             puts "x", i
             count += 1
@@ -67,7 +69,7 @@ EM::run do
                 make.call()
             end
         else
-            EM::stop
+            #EM::stop
         end
     end
     

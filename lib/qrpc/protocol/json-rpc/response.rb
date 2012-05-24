@@ -63,7 +63,8 @@ module QRPC
                         error = @options.error
                         request = @options.request
                         
-                        @native = request.native.class::version.response::create(result, error.native, :id => request.id)
+                        error_native = error.nil? ? nil : error.native
+                        @native = request.native.class::version.response::create(result, error_native, :id => request.id)
                         @native.serializer = @options.serializer
                         @native.qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create.output
                     end

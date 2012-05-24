@@ -6,8 +6,8 @@ which works as normal RPC server, but through queue interface, so allows
 highly scalable, distributed and asynchronous remote API implementation 
 and fast data processing. 
 
-It's based on [eventmachine][1] and [beanstalkd][2] so it's fast and 
-thread safe. 
+It's based on [eventmachine][1] and the default implementation uses 
+[beanstalkd][2] so it's fast and thread safe. 
 
 ### Protocol
 
@@ -54,7 +54,7 @@ And in case of exception:
                 "message" => <exception message>,
                 "backtrace" => <array of Base64 encoded strings>,
                 "dump" => {
-                    "raw" => <Base 54 encoded marshaled exception object>,
+                    "raw" => <Base64 encoded marshaled exception object>,
                     "format" => "ruby"
                 }
             }
@@ -67,6 +67,21 @@ And in case of exception:
     }
     
 Both `backtrace` and `dump` members are optional.
+
+### Variety of Platforms
+
+#### Transfer Agents (Queues)
+
+QRPC uses the [Unified Queues][10] interface which ensures connecting
+to different queue interfaces using unified API. It can be used on all 
+platforms which have unified queues driver available by this way. By default,
+two of them are available:
+
+* [beanstalkd][2] queue protocol,
+* 8 different queues-like in-memory objects (in fact, all priority queue 
+implementations available for Ruby to date).
+
+See the [Unified Queues][10] documentation.
 
     
 ### Server Usage
