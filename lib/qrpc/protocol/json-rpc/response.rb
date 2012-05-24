@@ -1,6 +1,8 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
+require "base64"
+
 require "qrpc/general"
 require "qrpc/protocol/abstract/response"
 require "qrpc/protocol/json-rpc/native/qrpc-object"
@@ -101,15 +103,36 @@ module QRPC
                                   
                 ##
                 # Returns response error.
-                # @return [Boolean] error indication
+                # @return [Exception] error object
                 #
                 
                 def error
-                    self.native.error
+            
+                    # Converts protocol exception to exception data object
+                    proto = QRPC::Protocol::JsonRpc::Native::ExceptionData::new(native.error.data)
+                
+                    # Tries to unmarshall
+                    if proto.dump.format == :ruby
+                        begin
+                            exception = Marshal.load(Base64.decode64(proto.dump.raw))
+                        rescue
+                            # pass
+                        end
+                    end
+                    
+                    # If unsuccessfull, creates from data
+                    if exception.nil?
+                        backtrace = data.backtrace.map { |i| Base64.decode64(i) }
+                        backtrace.reject! { |i| i.empty? }
+                        exception = self::new(data.name, data.message, backtrace)
+                    end
+    
+                    return exception
+                    
                 end
                 
                 ##
-                # Returns response result..
+                # Returns response result.
                 # @return [Object] response result
                 #
                 

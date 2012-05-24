@@ -173,17 +173,7 @@ module QRPC
                 if not result.error?
                     @result = result.result
                 else
-=begin
-                    STDERR.write(">>> Exception while call ID: " << self.id.to_s << "\n")
-=end                    
-                    exception = QRPC::Client::Exception::get(result.error)
-=begin
-                    STDERR.write exception.class.name.dup << ": " << exception.message << "\n"
-                    
-                    exception.backtrace.each do |i|
-                        STDERR.write "	from " << i << "\n"
-                    end
-=end                    
+                    exception = result.error
                     raise exception
                 end
                 

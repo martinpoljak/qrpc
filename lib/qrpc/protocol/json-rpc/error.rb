@@ -64,7 +64,7 @@ module QRPC
                 def serialize
                     self.native.serialize
                 end
-                
+                                
             end
         end
     end

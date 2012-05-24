@@ -14,7 +14,7 @@ module QRPC
     ##
     # Protocols helper module.
     # @since 0.9.0
-    #
+    #-
     
     module Protocol
 
@@ -47,7 +47,7 @@ module QRPC
                         not_implemented
                     end
                 end
-
+ 
             end
         end
     end
