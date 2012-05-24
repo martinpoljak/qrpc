@@ -12,6 +12,7 @@ require "eventmachine"
 
 #require "qrpc/generator/uuid"
 require "qrpc/generator/object-id"
+require "qrpc/protocol/object"
 
 #require "json-rpc-objects/serializer/bson"
 require "json-rpc-objects/serializer/json"
@@ -22,9 +23,10 @@ require "json-rpc-objects/serializer/msgpack"
 
 EM::run do
     generator = QRPC::Generator::ObjectID::new
-    #queue = QRPC::Locator::EventedQueueLocator::new("test")
-    queue1 = QRPC::Locator::EMJackLocator::new("test")
-    queue2 = QRPC::Locator::EMJackLocator::new("test")
+    queue = QRPC::Locator::EventedQueueLocator::new("test")
+    #queue1 = QRPC::Locator::EMJackLocator::new("test")
+    #queue2 = QRPC::Locator::EMJackLocator::new("test")
+    protocol = QRPC::Protocol::Object::new
 
     ###############
     # Server
@@ -37,14 +39,14 @@ EM::run do
         end
     end
 
-    server = QRPC::Server::new(Foo::new, :synchronous)
-    server.listen! queue1
+    server = QRPC::Server::new(Foo::new, :synchronous, protocol)
+    server.listen! queue
     
     ###############
     # Client
     ###############
     
-    client = QRPC::Client::new(queue2, generator)
+    client = QRPC::Client::new(queue, generator, protocol)
 #    puts client.inspect
 
 #    client.something_bad do |i|

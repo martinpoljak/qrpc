@@ -69,6 +69,16 @@ module QRPC
                     not_implemented
                 end
                 
+                                  
+                ##
+                # Returns response error.
+                # @return [Exception] error object
+                #
+                
+                def error
+                    not_implemented
+                end            
+
                 ##
                 # Indicates, error state of the response.
                 # @return [Boolean] error indication

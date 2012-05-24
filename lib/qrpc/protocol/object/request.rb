@@ -3,7 +3,6 @@
 
 require "qrpc/general"
 require "qrpc/protocol/abstract/request"
-require "qrpc/protocol/json-rpc/native/qrpc-object"
 
 ##
 # General QRPC module.
@@ -19,25 +18,18 @@ module QRPC
     module Protocol
 
         ##
-        # JSON-RPC protocol implementation.
+        # Object protocol implementation.
         # @since 0.9.0
         #
         
-        class JsonRpc
+        class Object
         
             ##
-            # JSON-RPC request implementation.
+            # Object request implementation.
             # @since 0.9.0
             #
             
             class Request < QRPC::Protocol::Abstract::Request
-              
-                ##
-                # Holds native object.
-                #
-                
-                attr_writer :native
-                @native 
 
                 ##
                 # Parses the data for new object.
@@ -47,37 +39,16 @@ module QRPC
                 #
                                 
                 def self.parse(raw)
-                    object = self::new 
-                    object.native = JsonRpcObjects::Request::parse(raw, :wd, self::options.serializer)
-                    return object
+                    self::new(raw.options)
                 end
-                
-
-                ##
-                # Returns the native object.
-                # @return [JsonRpcObjects::Response]  native response object
-                #
-                
-                def native
-                    if @native.nil?
-                        client_id = @options.client_id.to_s
-                        qrpc = QRPC::Protocol::JsonRpc::Native::QrpcObject::create(:client => client_id, :priority => @options.priority, :notification => @options.notification)
-                        qrpc.serializer = @options.serializer
-                        
-                        @native = JsonRpcObjects::Request::create(@options[:method], @options.arguments, :id => @options.id, :qrpc => qrpc.output)
-                        @native.serializer = @options.serializer
-                    end
-                    
-                    @native
-                end
-                
+                                
                 ##
                 # Serializes object to the resultant form.
-                # @return [String]  serialized form
+                # @return [Request]  serialized form
                 #
                 
                 def serialize
-                    self.native.serialize
+                    self
                 end
                 
                 ##
@@ -86,7 +57,7 @@ module QRPC
                 #
                 
                 def id
-                    self.native.id
+                    @options.id
                 end
                 
                 ##
@@ -95,7 +66,7 @@ module QRPC
                 #
                 
                 def method
-                    @native.method
+                    @options[:method]
                 end
 
                 ##
@@ -104,7 +75,7 @@ module QRPC
                 #
                 
                 def params
-                    @native.params
+                    @options.arguments
                 end
 
                 ##
@@ -113,7 +84,7 @@ module QRPC
                 #
                  
                 def priority
-                    @native.qrpc["priority"]
+                    @options.priority
                 end
 
                 ##
@@ -122,7 +93,7 @@ module QRPC
                 #
                  
                 def client
-                    @native.qrpc["client"]
+                    @options.client_id.to_s
                 end
                 
                 ##
@@ -131,7 +102,7 @@ module QRPC
                 #
                 
                 def notification?
-                    @native.qrpc["notification"]
+                    @options.notification
                 end
                 
             end
