@@ -1,4 +1,12 @@
 
+0.9.0 (2012-05-24)
+* transfer agents generic support
+* protocols generic support
+* ID generators generic support
+* serializers generic support
+* server synchronicity option support
+* substantial code reorganization
+
 0.3.2 (2011-08-28)
 * UUID of the client now generated in compact format
 * compatiblity corrections with OkJson
