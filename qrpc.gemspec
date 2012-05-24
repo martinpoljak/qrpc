@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "qrpc"
-  s.version = "0.3.2"
+  s.version = "0.9.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Martin Koz\u{e1}k"]
-  s.date = "2011-08-28"
+  s.date = "2012-05-24"
   s.email = "martinkozak@martinkozak.net"
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -30,51 +30,87 @@ Gem::Specification.new do |s|
     "lib/qrpc/client/exception.rb",
     "lib/qrpc/client/job.rb",
     "lib/qrpc/general.rb",
+    "lib/qrpc/generator/object-id.rb",
+    "lib/qrpc/generator/uuid.rb",
     "lib/qrpc/locator.rb",
-    "lib/qrpc/protocol/exception-data.rb",
-    "lib/qrpc/protocol/qrpc-object.rb",
-    "lib/qrpc/protocol/request.rb",
+    "lib/qrpc/locator/em-jack.rb",
+    "lib/qrpc/locator/evented-queue.rb",
+    "lib/qrpc/protocol/abstract.rb",
+    "lib/qrpc/protocol/abstract/error.rb",
+    "lib/qrpc/protocol/abstract/object.rb",
+    "lib/qrpc/protocol/abstract/request.rb",
+    "lib/qrpc/protocol/abstract/response.rb",
+    "lib/qrpc/protocol/json-rpc.rb",
+    "lib/qrpc/protocol/json-rpc/error.rb",
+    "lib/qrpc/protocol/json-rpc/native/exception-data.rb",
+    "lib/qrpc/protocol/json-rpc/native/qrpc-object.rb",
+    "lib/qrpc/protocol/json-rpc/request.rb",
+    "lib/qrpc/protocol/json-rpc/response.rb",
+    "lib/qrpc/protocol/object.rb",
+    "lib/qrpc/protocol/object/error.rb",
+    "lib/qrpc/protocol/object/request.rb",
+    "lib/qrpc/protocol/object/response.rb",
     "lib/qrpc/server.rb",
     "lib/qrpc/server/dispatcher.rb",
     "lib/qrpc/server/job.rb",
     "qrpc.gemspec",
+    "test-both.rb",
     "test-client.rb",
     "test-server.rb"
   ]
   s.homepage = "http://github.com/martinkozak/qrpc"
   s.licenses = ["MIT"]
+  s.post_install_message = "\nQRPC: API of the 0.9.x version (and 1.0 in future) is partialy incompatible with the older versions. Modifications of your current applications may be necessary for upgrading them to the latest version. \n\n"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
-  s.summary = "Queued JSON-RPC client and server. Works as normal RPC server, but through queue interface, so allows highly scalable, distributed and asynchronous remote API implementation and fast data processing. It's based on eventmachine and beanstalkd, so it's fast and thread safe."
+  s.rubygems_version = "1.8.24"
+  s.summary = "Queued RPC client and server. Works as normal RPC server, but through queue interface, so allows highly scalable, distributed and asynchronous remote API implementation and fast data processing. It's based on EventMachine and typically on Beanstalk, so it's fast and thread safe."
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<json-rpc-objects>, [">= 0.3.3"])
-      s.add_runtime_dependency(%q<depq>, [">= 0.4"])
-      s.add_runtime_dependency(%q<em-jack>, [">= 0.1.3"])
+      s.add_runtime_dependency(%q<json-rpc-objects>, [">= 0.4.1"])
+      s.add_runtime_dependency(%q<PriorityQueue>, [">= 0.1.2"])
+      s.add_runtime_dependency(%q<unified-queues>, [">= 0"])
+      s.add_runtime_dependency(%q<evented-queue>, [">= 0"])
       s.add_runtime_dependency(%q<eventmachine>, [">= 0"])
-      s.add_runtime_dependency(%q<uuid>, [">= 2.3.2"])
+      s.add_runtime_dependency(%q<hash-utils>, [">= 1.1.0"])
+      s.add_runtime_dependency(%q<em-wrapper>, [">= 0"])
+      s.add_runtime_dependency(%q<abstract>, [">= 0"])
+      s.add_runtime_dependency(%q<em-jack>, [">= 0.1.3"])
+      s.add_runtime_dependency(%q<hashie>, [">= 1.0.0"])
+      s.add_runtime_dependency(%q<uuid>, [">= 2.0.0"])
       s.add_development_dependency(%q<bundler>, [">= 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, [">= 1.5.2"])
+      s.add_development_dependency(%q<jeweler2>, [">= 2.0.0"])
     else
-      s.add_dependency(%q<json-rpc-objects>, [">= 0.3.3"])
-      s.add_dependency(%q<depq>, [">= 0.4"])
-      s.add_dependency(%q<em-jack>, [">= 0.1.3"])
+      s.add_dependency(%q<json-rpc-objects>, [">= 0.4.1"])
+      s.add_dependency(%q<PriorityQueue>, [">= 0.1.2"])
+      s.add_dependency(%q<unified-queues>, [">= 0"])
+      s.add_dependency(%q<evented-queue>, [">= 0"])
       s.add_dependency(%q<eventmachine>, [">= 0"])
-      s.add_dependency(%q<uuid>, [">= 2.3.2"])
+      s.add_dependency(%q<hash-utils>, [">= 1.1.0"])
+      s.add_dependency(%q<em-wrapper>, [">= 0"])
+      s.add_dependency(%q<abstract>, [">= 0"])
+      s.add_dependency(%q<em-jack>, [">= 0.1.3"])
+      s.add_dependency(%q<hashie>, [">= 1.0.0"])
+      s.add_dependency(%q<uuid>, [">= 2.0.0"])
       s.add_dependency(%q<bundler>, [">= 1.0.0"])
-      s.add_dependency(%q<jeweler>, [">= 1.5.2"])
+      s.add_dependency(%q<jeweler2>, [">= 2.0.0"])
     end
   else
-    s.add_dependency(%q<json-rpc-objects>, [">= 0.3.3"])
-    s.add_dependency(%q<depq>, [">= 0.4"])
-    s.add_dependency(%q<em-jack>, [">= 0.1.3"])
+    s.add_dependency(%q<json-rpc-objects>, [">= 0.4.1"])
+    s.add_dependency(%q<PriorityQueue>, [">= 0.1.2"])
+    s.add_dependency(%q<unified-queues>, [">= 0"])
+    s.add_dependency(%q<evented-queue>, [">= 0"])
     s.add_dependency(%q<eventmachine>, [">= 0"])
-    s.add_dependency(%q<uuid>, [">= 2.3.2"])
+    s.add_dependency(%q<hash-utils>, [">= 1.1.0"])
+    s.add_dependency(%q<em-wrapper>, [">= 0"])
+    s.add_dependency(%q<abstract>, [">= 0"])
+    s.add_dependency(%q<em-jack>, [">= 0.1.3"])
+    s.add_dependency(%q<hashie>, [">= 1.0.0"])
+    s.add_dependency(%q<uuid>, [">= 2.0.0"])
     s.add_dependency(%q<bundler>, [">= 1.0.0"])
-    s.add_dependency(%q<jeweler>, [">= 1.5.2"])
+    s.add_dependency(%q<jeweler2>, [">= 2.0.0"])
   end
 end
 
