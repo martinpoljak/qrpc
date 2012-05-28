@@ -161,7 +161,7 @@ Client usage is simple too. Look example complement the example above:
     require "eventmachine"
     
     require "qrpc/client"                           # client 
-    require "qrpc/generator/uuid"                   # ID generator
+    require "qrpc/generator/object_id"              # ID generator
     require "qrpc/locator/em-jack"                  # queue transfer agent
     require "qrpc/protocol/json-rpc"                # RPC protocol
     require "json-rpc-objects/serializer/msgpack"   # serializer
