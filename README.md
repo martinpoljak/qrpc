@@ -131,7 +131,7 @@ by the *MsgPack* format working *synchronously*:
         end
     end
 
-    serializer = JsonRpcObjects::Serializer::MsgPack::new
+    serializer = JsonRpcObjects::Serializer::MessagePack::new
     protocol = QRPC::Protocol::JsonRpc::new(:serializer => serializer)
     locator = QRPC::Locator::EMJackLocator::new("test")
 
@@ -169,7 +169,7 @@ Client usage is simple too. Look example complement the example above:
     EM::run do
         generator = QRPC::Generator::ObjectID::new
         locator = QRPC::Locator::EMJackLocator::new(:test)
-        serializer = JsonRpcObjects::Serializer::JSON::new
+        serializer = JsonRpcObjects::Serializer::MessagePack::new
         protocol = QRPC::Protocol::JsonRpc::new(:serializer => serializer)
         
         client = QRPC::Client::new(locator, generator, protocol) 
