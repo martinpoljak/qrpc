@@ -6,6 +6,7 @@ require "base64"
 require "qrpc/general"
 require "qrpc/protocol/abstract/response"
 require "qrpc/protocol/json-rpc/native/qrpc-object"
+require "json-rpc-objects/response"
 
 ##
 # General QRPC module.

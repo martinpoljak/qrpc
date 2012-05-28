@@ -1,15 +1,12 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "qrpc/protocol/qrpc-object"
 require "qrpc/server/dispatcher"
 require "qrpc/server/job"
 require "qrpc/general"
 
 require "hash-utils/hash"   # >= 0.1.0
 require "eventmachine"
-require "em-batch"
-require "em-jack"
 require "base64"
 
 ##

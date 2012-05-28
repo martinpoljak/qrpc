@@ -1,12 +1,9 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "em-jack"
-require "em-batch"
 require "qrpc/general"
 require "qrpc/client/job"
 require "hash-utils/object"   # >= 1.1.0
-require "json-rpc-objects/response"
 
 ##
 # General QRPC module.

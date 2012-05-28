@@ -4,6 +4,7 @@
 require "qrpc/general"
 require "qrpc/protocol/abstract/request"
 require "qrpc/protocol/json-rpc/native/qrpc-object"
+require "json-rpc-objects/request"
 
 ##
 # General QRPC module.

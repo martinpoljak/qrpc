@@ -1,11 +1,6 @@
 # encoding: utf-8
 require "eventmachine"
-require "json-rpc-objects/request"
-require "json-rpc-objects/response"
-require "json-rpc-objects/error"
 require "qrpc/general"
-require "qrpc/protocol/qrpc-object"
-require "qrpc/protocol/exception-data"
 
 
 ##

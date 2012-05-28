@@ -1,8 +1,6 @@
 # encoding: utf-8
 # (c) 2011 Martin Kozák (martinkozak@martinkozak.net)
 
-require "qrpc/protocol/exception-data"
-
 ##
 # General QRPC module.
 #
