@@ -1,7 +1,8 @@
 # encoding: utf-8
+# (c) 2011-2012 Martin Kozák (martinkozak@martinkozak.net)
+
 require "eventmachine"
 require "qrpc/general"
-
 
 ##
 # General QRPC module.
