@@ -1,4 +1,8 @@
 
+0.9.1 (2012-05-28)
+* corrected fatal redundant dependency requirements
+* documentation corrections
+
 0.9.0 (2012-05-24)
 * transfer agents generic support
 * protocols generic support
