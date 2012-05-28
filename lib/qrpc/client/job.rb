@@ -164,7 +164,7 @@ module QRPC
             
             ##
             # Assigns job result and subsequently calls callback.
-            # @param [JsonRpcObjects::Generic::Response] result of the call
+            # @param [QRPC::Protocol::Abstract::Response] result of the call
             #
             
             def assign_result(result)

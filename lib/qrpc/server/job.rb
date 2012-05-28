@@ -62,7 +62,7 @@ module QRPC
             #
             # @param [Object] object which will serve as API
             # @param [Symbol] synchronicity  API methods synchronicity
-            # @param [EM::Beanstalk::Job] job beanstalk job
+            # @param [Object] job beanstalk job
             # @param [QRPC::Protocol::Abstract] protocol protocol handling instance
             #
             
@@ -127,7 +127,7 @@ module QRPC
 
             ##
             # Returns job in request form.
-            # @return [JsonRpcObjects::Generic::Object] request associated to job
+            # @return [QRPC::Protocol::Abstract::Request] request associated to job
             #
             
             def request
